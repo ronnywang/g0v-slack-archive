@@ -117,11 +117,16 @@ class Channel extends Pix_Table
     {
         $this->_name = 'channel';
         $this->_primary = 'id';
+        $this->_rowClass = 'ChannelRow';
 
         $this->_columns['id'] = array('type' => 'varchar', 'size' => 16);
-        $this->_columns['name'] = array('type' => 'varchar', 'size' => 16);
+        $this->_columns['name'] = array('type' => 'varchar', 'size' => 64);
         $this->_columns['data'] = array('type' => 'json');
+        $this->_columns['last_updated_at'] = array('type' => 'numeric', 'default' => 0);
+        $this->_columns['last_fetched_at'] = array('type' => 'numeric', 'default' => 0);
+        $this->_columns['private_config'] = array('type' => 'json', 'default' => '{}');
 
         $this->addIndex('name', array('name'));
     }
+
 }
