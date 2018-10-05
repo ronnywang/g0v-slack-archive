@@ -1,0 +1,26 @@
+<?= $this->partial('/common/header.phtml', $this) ?>
+請選擇您為什麼要登入：
+<ul>
+    <li>
+    我想要協助備份非公開頻道記錄
+    <ul>
+        <li>會需要您提供可以離線瀏覽頻道的權限</li>
+        <li><a href="/index/login?type=backup"><button>登入</button></a></li>
+    </ul>
+    </li>
+    <li>我想要瀏覽非公開頻道記錄
+    <ul>
+        <li>只需要驗證您的身份，不需要您提供權限</li>
+        <li><a href="/index/login?type=read"><button>登入</button></a></li>
+    </ul>
+    </li>
+    <li>
+    我想要瀏覽公開頻道記錄
+    <ul>
+        <li>
+        不需要登入即可使用
+        </li>
+    </ul>
+    </li>
+</ul>
+<?= $this->partial('/common/footer.phtml', $this) ?>

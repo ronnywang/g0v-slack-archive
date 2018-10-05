@@ -1,0 +1,26 @@
+<?php
+
+$this->messages = Message::search(array('channel_id' => $this->channel->id));
+?>
+<?= $this->partial('common/header.phtml', $this) ?>
+<style>
+.message .avatar {
+    float: left;
+    padding-right: 5px;
+}
+
+.message .content {
+    float: left;
+    padding-bottom: 10px;
+}
+
+.message {
+    clear: both;
+}
+</style>
+<h1><?= $this->escape($this->channel->name) ?></h1>
+<?php foreach ($this->messages->search('ts >= ' . strtotime('2018-10-05'))->order('ts ASC') as $message) { ?>
+<?= $this->partial('/index/message.phtml', array('message' => $message)) ?>
+<?php } ?>
+<?= $this->partial('common/footer.phtml', $this) ?>
+
