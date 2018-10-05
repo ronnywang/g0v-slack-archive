@@ -21,7 +21,7 @@ class IndexController extends Pix_Controller
 
     public function channelAction()
     {
-        list(,/*index*/, /*channel*/, $channel_id) = explode('/', $this->getURI());
+        list(,/*index*/, /*channel*/, $channel_id, $date) = explode('/', $this->getURI());
         if (!$this->view->channel = Channel::find($channel_id)) {
             return $this->alert('channel not found', '/');;
         }
@@ -35,6 +35,28 @@ class IndexController extends Pix_Controller
             if (!ChannelUser::search(array('channel_id' => $channel_id, 'user_id' => $this->view->user->id))->count()) {
                 return $this->alert('channel not found', '/');
             }
+        }
+
+        if (strlen($date) and !preg_match('#\d*-\d*-\d*#', $date)) {
+            return $this->redirect('/index/channel/' . urlencode($channel_id));
+        }
+
+        if ($date) {
+            $this->view->current_date = strtotime($date);
+        } else {
+            $this->view->current_date = strtotime('0:0:0', Message::search(array('channel_id' => $channel_id))->order('ts DESC')->first()->ts);
+        }
+
+        if ($m = Message::search(array('channel_id' => $channel_id))->search("ts < " . $this->view->current_date)->order('ts DESC')->first()) { 
+            $this->view->previous_date = strtotime('0:0:0', $m->ts);
+        } else {
+            $this->view->previous_date = null;
+        }
+
+        if ($m = Message::search(array('channel_id' => $channel_id))->search("ts > 86400 + " . $this->view->current_date)->order('ts ASC')->first()) { 
+            $this->view->next_date = strtotime('0:0:0', $m->ts);
+        } else {
+            $this->view->next_date = null;
         }
     }
 

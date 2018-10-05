@@ -19,7 +19,16 @@ $this->messages = Message::search(array('channel_id' => $this->channel->id));
 }
 </style>
 <h1><?= $this->escape($this->channel->name) ?></h1>
-<?php foreach ($this->messages->search('ts >= ' . strtotime('2018-10-05'))->order('ts ASC') as $message) { ?>
+<h3>Date: <?= date('Y-m-d', $this->current_date) ?></h3>
+<div>
+    <?php if ($this->previous_date) { ?>
+    <a href="/index/channel/<?= $this->channel->id ?>/<?= date('Y-m-d', $this->previous_date) ?>"><?= date('Y-m-d', $this->previous_date) ?></a>
+    <?php } ?>
+    <?php if ($this->next_date) { ?>
+    <a href="/index/channel/<?= $this->channel->id ?>/<?= date('Y-m-d', $this->next_date) ?>"><?= date('Y-m-d', $this->next_date) ?></a>
+    <?php } ?>
+</div>
+<?php foreach ($this->messages->search("ts >= {$this->current_date} AND ts < {$this->current_date} + 86400")->order('ts ASC') as $message) { ?>
 <?= $this->partial('/index/message.phtml', array('message' => $message)) ?>
 <?php } ?>
 <?= $this->partial('common/footer.phtml', $this) ?>
