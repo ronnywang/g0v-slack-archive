@@ -3,48 +3,12 @@ $message_data = json_decode($this->message->data);
 if ($message_data->user and $user = User::find($message_data->user)) {
     $user_data = json_decode($user->data);
     $avatar = $user_data->profile->image_72;
-    if ($user_data->profile->display_name) {
-        $user_name = $user_data->profile->display_name;
-    } else {
-        $user_name = $user_data->name;
-    }
 } else {
     $avatar = 'https://ca.slack-edge.com/T02G2SXKM-UD94JT3KQ-g8c100274e62-48';
-    $user_name = '@' . $message_data->user;
 }
 
-$generated_text = '';
-$text = $message_data->text;
-while (true) {
-    if (strpos($text, '<') === false) {
-        $text = str_replace('&lt;', '<', $text);
-        $text = str_replace('&gt;', '>', $text);
-        $generated_text .= nl2br(htmlspecialchars($text));
-        break;
-    }
-    list($plain_text, $other) = explode('<', $text, 2);
-    $plain_text = str_replace('&lt;', '<', $plain_text);
-    $plain_text = str_replace('&gt;', '>', $plain_text);
-    $generated_text .= nl2br(htmlspecialchars($plain_text));
-
-    list($special_text, $text) = explode('>', $other, 2);
-    if ($special_text[0] == '@') {
-        if (!$user = User::find(ltrim($special_text, '@'))) {
-            $name = '@' . $matches[1];
-        } else {
-            $name = '@' . $user->name;
-        }
-        $generated_text .= '<b>' . nl2br(htmlspecialchars($name)) . '</b>';
-    } elseif (strpos($special_text, 'http') === 0) {
-        $generated_text .= sprintf("<a href=\"%s\">%s</a>", htmlspecialchars($special_text), htmlspecialchars($special_text));
-    } elseif (preg_match("/^#(.*)\|(.*)$/", $special_text, $matches)) {
-        $generated_text .= sprintf("<a href=\"/index/channel/%s\">#%s</a>", htmlspecialchars($matches[1]), htmlspecialchars($matches[2]));
-    } else {
-        $generated_text .= '&lt;' . $special_text . '&gt;';
-    }
-}
 $style = '';
-if ($message_data->thread_ts and !$message_data->is_thread_broadcast) {
+if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
     $style = "display:none";
 }
 ?>
@@ -54,9 +18,37 @@ if ($message_data->thread_ts and !$message_data->is_thread_broadcast) {
     </div>
     <div class="content">
         <div>
-            <span class="user-name" title="<?= htmlspecialchars(json_encode($user_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><strong><?= $this->escape($user_name) ?></strong></span>
+            <span class="user-name" title="<?= htmlspecialchars(json_encode($user_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><strong><?= $this->escape(Message::getUserName($message_data->user)) ?></strong></span>
             <span class="message-time" title="<?= htmlspecialchars(json_encode($message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a href="#ts-<?= $this->message->ts ?>"><?= date('H:i:s', $this->message->ts) ?></a></span>
         </div>
-        <div><?= $generated_text ?></div>
+        <div><?= Message::getHTML($message_data) ?></div>
+
+        <?php if (property_exists($message_data, 'files')) { ?>
+        <?php foreach ($message_data->files as $file) { ?>
+        <h5><?= $this->escape($file->title) ?></h5>
+        <img src="<?= $this->escape($file->thumb_360) ?>">
+        <?php } ?>
+        <?php } ?>
+
+        <?php if (property_exists($message_data, 'replies')) { ?>
+        <?php foreach ($message_data->replies as $reply) { ?>
+        <?php $reply_message = Message::find(array($this->message->channel_id, $reply->ts)) ?>
+        <?php $reply_message_data = json_decode($reply_message->data) ?>
+        <?php $reply_user_data = json_decode(User::find($reply_message_data->user)->data) ?>
+        <div style="padding-top: 5px">
+            <div class="avatar">
+                <img src="<?= $this->escape($reply_user_data->profile->image_72) ?>" width="24" height="24">
+            </div>
+            <div class="content">
+                <div>
+                    <span class="user-name" title="<?= htmlspecialchars(json_encode($reply_user_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><strong><?= $this->escape(Message::getUserName($reply_message_data->user)) ?></strong></span>
+                    <span class="message-time" title="<?= htmlspecialchars(json_encode($reply_message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a href="#ts-<?= $reply_message->ts ?>"><?= date('H:i:s', $reply_message->ts) ?></a></span>
+                </div>
+                <div><?= Message::getHTML($reply_message_data) ?></div>
+            </div>
+            <div style="clear: both"></div>
+        </div>
+        <?php } ?>
+        <?php } ?>
     </div>
 </div>
