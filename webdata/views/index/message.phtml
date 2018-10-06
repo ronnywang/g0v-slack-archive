@@ -48,14 +48,14 @@ if ($message_data->thread_ts and !$message_data->is_thread_broadcast) {
     $style = "display:none";
 }
 ?>
-<div class="message" style="<?= $style ?>">
+<div class="message" style="<?= $style ?>" id="ts-<?= $this->message->ts?>">
     <div class="avatar">
         <img src="<?= $this->escape($avatar) ?>" width="36" height="36">
     </div>
     <div class="content">
         <div>
             <span class="user-name" title="<?= htmlspecialchars(json_encode($user_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><strong><?= $this->escape($user_name) ?></strong></span>
-            <span class="message-time" title="<?= htmlspecialchars(json_encode($message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><?= date('Y-m-d H:i:s', $this->message->ts) ?></span>
+            <span class="message-time" title="<?= htmlspecialchars(json_encode($message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a href="#ts-<?= $this->message->ts ?>"><?= date('H:i:s', $this->message->ts) ?></a></span>
         </div>
         <div><?= $generated_text ?></div>
     </div>
