@@ -1,6 +1,11 @@
 <?php
 
 $this->messages = Message::search(array('channel_id' => $this->channel->id));
+if ($this->next_date) {
+    $range_term = "ts >= {$this->current_date} AND ts < {$this->next_date}";
+} else {
+    $range_term = "ts >= {$this->current_date}";
+}
 ?>
 <?= $this->partial('common/header.phtml', $this) ?>
 <style>
@@ -19,17 +24,23 @@ $this->messages = Message::search(array('channel_id' => $this->channel->id));
 }
 </style>
 <h1><?= $this->escape($this->channel->name) ?></h1>
-<h3>Date: <?= date('Y-m-d', $this->current_date) ?></h3>
+<h3>Month: <?= date('Y-m', $this->current_date) ?></h3>
 <div>
     <?php if ($this->previous_date) { ?>
-    <a href="/index/channel/<?= $this->channel->id ?>/<?= date('Y-m-d', $this->previous_date) ?>"><?= date('Y-m-d', $this->previous_date) ?></a>
+    <a href="/index/channel/<?= $this->channel->id ?>/<?= date('Y-m', $this->previous_date) ?>"><?= date('Y-m', $this->previous_date) ?></a>
     <?php } ?>
     <?php if ($this->next_date) { ?>
-    <a href="/index/channel/<?= $this->channel->id ?>/<?= date('Y-m-d', $this->next_date) ?>"><?= date('Y-m-d', $this->next_date) ?></a>
+    <a href="/index/channel/<?= $this->channel->id ?>/<?= date('Y-m', $this->next_date) ?>"><?= date('Y-m', $this->next_date) ?></a>
     <?php } ?>
 </div>
-<?php foreach ($this->messages->search("ts >= {$this->current_date} AND ts < {$this->current_date} + 86400")->order('ts ASC') as $message) { ?>
+<?php $current_date = null; ?>
+<?php foreach ($this->messages->search($range_term)->order('ts ASC') as $message) { ?>
+<?php if (is_null($current_date) or date('Y-m-d', $message->ts) != $current_date) { ?>
+<?php $current_date = date('Y-m-d', $message->ts) ?>
+<h4><?= $current_date ?></h4>
+<?php } ?>
 <?= $this->partial('/index/message.phtml', array('message' => $message)) ?>
+<div style="clear:both"></div>
 <?php } ?>
 <?= $this->partial('common/footer.phtml', $this) ?>
 

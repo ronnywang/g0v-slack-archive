@@ -37,24 +37,26 @@ class IndexController extends Pix_Controller
             }
         }
 
-        if (strlen($date) and !preg_match('#\d*-\d*-\d*#', $date)) {
+        if (strlen($date) and !preg_match('#\d*-\d*#', $date)) {
             return $this->redirect('/index/channel/' . urlencode($channel_id));
         }
 
         if ($date) {
-            $this->view->current_date = strtotime($date);
+            $current_date = mktime(0, 0, 0, explode('-', $date)[1], 1, explode('-', $date)[0]);
         } else {
-            $this->view->current_date = strtotime('0:0:0', Message::search(array('channel_id' => $channel_id))->order('ts DESC')->first()->ts);
+            $ts = Message::search(array('channel_id' => $channel_id))->order('ts DESC')->first()->ts;
+            $current_date = mktime(0, 0, 0, date('m', $ts), 1, date('Y', $ts));
         }
+        $this->view->current_date = $current_date;
 
         if ($m = Message::search(array('channel_id' => $channel_id))->search("ts < " . $this->view->current_date)->order('ts DESC')->first()) { 
-            $this->view->previous_date = strtotime('0:0:0', $m->ts);
+            $this->view->previous_date = mktime(0, 0, 0, date('m', $m->ts), 1, date('Y', $m->ts));
         } else {
             $this->view->previous_date = null;
         }
 
-        if ($m = Message::search(array('channel_id' => $channel_id))->search("ts > 86400 + " . $this->view->current_date)->order('ts ASC')->first()) { 
-            $this->view->next_date = strtotime('0:0:0', $m->ts);
+        if ($m = Message::search(array('channel_id' => $channel_id))->search("ts > " . strtotime('next month', $this->view->current_date))->order('ts ASC')->first()) { 
+            $this->view->next_date = mktime(0, 0, 0, date('m', $m->ts), 1, date('Y', $m->ts));
         } else {
             $this->view->next_date = null;
         }
