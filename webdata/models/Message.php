@@ -12,7 +12,7 @@ class Message extends Pix_Table
         $this->_columns['data'] = array('type' => 'json');
     }
 
-    public function getUserName($user_id)
+    public static function getUserName($user_id)
     {
         if (!$user_id) {
             return '@null';
@@ -27,7 +27,7 @@ class Message extends Pix_Table
         return $user_data->name;
     }
 
-    public function getHTML($message_data)
+    public static function getHTML($message_data)
     {
         $generated_text = '';
         $text = $message_data->text;
