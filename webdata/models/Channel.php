@@ -34,7 +34,7 @@ class ChannelRow extends Pix_Table_Row
             }
 
             foreach ($obj->messages as $message) {
-                if (floatval($message->ts) <= $last_fetched_at) {
+                if (floatval($message->ts) <= $last_fetched_at - 2 * 86400) {
                     break 2;
                 }
                 $messages[] = $message;
@@ -129,4 +129,35 @@ class Channel extends Pix_Table
         $this->addIndex('name', array('name'));
     }
 
+    public static function updateChannelData()
+    {
+        $access_token = getenv('SLACK_ACCESS_TOKEN');
+        $cursor = null;
+        while (true) {
+            $url = sprintf("https://slack.com/api/channels.list?token=%s&cursor=%s",
+                urlencode($access_token),
+                urlencode($cursor)
+            );
+
+            $obj = json_decode(file_get_contents($url));
+            if (!property_exists($obj, 'ok') or !$obj->ok) {
+                throw new MyException("fail to channels.list: " . $obj->error);
+            }
+
+            $db = Channel::getDb();
+            $terms = array_map(function($channel) use ($db) {
+                return sprintf("(%s,%s,%s)",
+                    $db->quoteWithColumn('data', $channel->id),
+                    $db->quoteWithColumn('data', $channel->name),
+                    $db->quoteWithColumn('data', json_encode($channel))
+                );
+            }, $obj->channels);
+            $db->query("INSERT INTO \"channel\" (id, name, data) VALUES " . implode(',', $terms) . " ON CONFLICT (id) DO UPDATE SET name = excluded.name, data = excluded.data");
+
+            if (!$obj->response_metadata->next_cursor) {
+                break;
+            }
+            $cursor = $obj->response_metadata->next_cursor;
+        }
+    }
 }
