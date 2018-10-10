@@ -1,5 +1,4 @@
 <?php
-$this->title = "Slack archive";
 $sql = "SELECT channel_id, count(*), max(ts) FROM message GROUP BY channel_id";
 $res = Message::getDb()->query($sql);
 $channel_count = array();

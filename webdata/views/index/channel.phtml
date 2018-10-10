@@ -1,6 +1,6 @@
 <?php
 
-$this->title = "{$this->channel->name} | Slack archive";
+$this->title = "#{$this->channel->name}";
 $this->messages = Message::search(array('channel_id' => $this->channel->id));
 if ($this->next_date) {
     $range_term = "ts >= {$this->current_date} AND ts < {$this->next_date}";

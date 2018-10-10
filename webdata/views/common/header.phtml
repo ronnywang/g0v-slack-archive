@@ -1,8 +1,21 @@
+<?php
+
+$title_terms = array();
+if ($this->title) {
+    $title_terms[] = $this->title;
+}
+
+if (getenv('WORKSPACE_NAME')) {
+    $title_terms[] = getenv('WORKSPACE_NAME');
+}
+
+$title_terms[] = 'slack archive';
+?>
 <!DOCTYPE html>
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title><?= $this->escape($this->title) ?></title>
+<title><?= $this->escape(implode(' | ', $title_terms)) ?></title>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/bootstrap.min.js"></script>
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.2/css/bootstrap.css">
