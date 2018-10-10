@@ -2,6 +2,22 @@
 
 $this->title = "#{$this->channel->name}";
 $this->messages = Message::search(array('channel_id' => $this->channel->id));
+
+$timezoom_offset = date('Z');
+$sql = "SELECT FLOOR((ts + {$timezoom_offset}) / 86400), COUNT(*) FROM message WHERE channel_id = '{$this->channel->id}' GROUP BY FLOOR((ts + {$timezoom_offset}) / 86400)";
+$res = Message::getDb()->query($sql);
+$month_count = array();
+while ($row = $res->fetch_array()) {
+    list($t, $count) = $row;
+    $t = $t * 86400 + $timezoom_offset;
+    $month = date('Y-m', $t);
+    if (!array_key_exists($month, $month_count)) {
+        $month_count[$month] = 0;
+    }
+    $month_count[$month] += $count;
+}
+ksort($month_count);
+
 if ($this->next_date) {
     $range_term = "ts >= {$this->current_date} AND ts < {$this->next_date}";
 } else {
@@ -26,13 +42,16 @@ if ($this->next_date) {
 </style>
 <h1><?= $this->escape($this->channel->name) ?></h1>
 <h3>Month: <?= date('Y-m', $this->current_date) ?></h3>
-<div>
-    <?php if ($this->previous_date) { ?>
-    <a href="/index/channel/<?= $this->channel->id ?>/<?= date('Y-m', $this->previous_date) ?>"><?= date('Y-m', $this->previous_date) ?></a>
+<div class="pagination">
+    <ul>
+    <?php foreach ($month_count as $month => $count) { ?>
+    <li <?= (date('Y-m', $this->current_date) == $month) ? ' class="active"': ''?>>
+    <a href="/index/channel/<?= $this->channel->id ?>/<?= $month ?>"><?= $month ?>
+        (<?= $count ?>)
+    </a>
+    </li>
     <?php } ?>
-    <?php if ($this->next_date) { ?>
-    <a href="/index/channel/<?= $this->channel->id ?>/<?= date('Y-m', $this->next_date) ?>"><?= date('Y-m', $this->next_date) ?></a>
-    <?php } ?>
+</ul>
 </div>
 <?php $current_date = null; ?>
 <?php foreach ($this->messages->search($range_term)->order('ts ASC') as $message) { ?>
