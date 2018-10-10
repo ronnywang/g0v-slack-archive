@@ -30,6 +30,24 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
         <?php } ?>
         <?php } ?>
 
+        <?php if (property_exists($message_data, 'attachments')) { ?>
+        <?php foreach ($message_data->attachments as $attachment) { ?>
+        <blockquote title="<?= $this->escape(json_encode($attachment, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>">
+            <p>
+            <?php if ($attachment->service_icon) { ?>
+            <img src="<?= $this->escape($attachment->service_icon) ?>" width="16" height="16">
+            <?php } ?>
+            <?= $this->escape($attachment->service_name) ?>
+            </p>
+            <p><a href="<?= $this->escape($attachment->title_link) ?>"><?= $this->escape($attachment->title) ?></a></p>
+            <p><?= $this->escape($attachment->text) ?></p>
+            <?php if ($attachment->image_url) { ?>
+            <img src="<?= $this->escape($attachment->image_url) ?>" width="<?= intval($attachment->image_width) ?>" height="<?= intval($attachment->image_height) ?>">
+            <?php } ?>
+        </blockquote>
+        <?php } ?>
+        <?php } ?>
+
         <?php if (property_exists($message_data, 'replies')) { ?>
         <?php foreach ($message_data->replies as $reply) { ?>
         <?php $reply_message = Message::find(array($this->message->channel_id, $reply->ts)) ?>
