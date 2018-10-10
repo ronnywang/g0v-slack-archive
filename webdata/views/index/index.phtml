@@ -28,7 +28,7 @@ while ($row = $res->fetch_array()) {
         <td>
             <a href="/index/channel/<?= $channel->id ?>" title="<?= $this->escape(($channel->data)) ?>"><?= $channel->name ?></a>
         </td>
-        <td><?= $this->escape($data->topic->value) ?></td>
+        <td><?= Message::getHTML($data->topic->value) ?></td>
         <td> <?= date('Y/m/d H:i:s', $data->created) ?> </td>
         <?php $private_config = json_decode($channel->private_config) ?>
         <?php if (property_exists($private_config, 'access_token')) { ?>
@@ -73,7 +73,7 @@ while ($row = $res->fetch_array()) {
         <td>
             <a href="/index/channel/<?= $channel->id ?>" title="<?= $this->escape(($channel->data)) ?>"><?= $channel->name ?></a>
         </td>
-        <td><?= $this->escape($data->topic->value) ?></td>
+        <td><?= Message::getHTML($data->topic->value) ?></td>
         <td> <?= date('Y/m/d H:i:s', $data->created) ?> </td>
         <td><?= $channel_count[$channel->id][0] ?></td>
         <td><?= date('Y/m/d H:i:s', $channel_count[$channel->id][1])?></td>

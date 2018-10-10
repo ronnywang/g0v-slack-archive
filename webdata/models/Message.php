@@ -30,7 +30,11 @@ class Message extends Pix_Table
     public static function getHTML($message_data)
     {
         $generated_text = '';
-        $text = $message_data->text;
+        if (is_scalar($message_data)) {
+            $text = $message_data;
+        } else {
+            $text = $message_data->text;
+        }
         while (true) {
             if (strpos($text, '<') === false) {
                 $text = str_replace('&lt;', '<', $text);
