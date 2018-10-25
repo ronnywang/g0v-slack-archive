@@ -81,7 +81,7 @@ class IndexController extends Pix_Controller
             return $this->alert($obj->error, '/index/login');
         }
         $access_token = $obj->access_token;
-        $user_id = $obj->user->id;
+        $user_id = $obj->user_id;
         $url = sprintf('https://slack.com/api/users.identity?token=%s', urlencode($access_token));
         $obj = json_decode(file_get_contents($url));
         if (!$obj->ok) {
