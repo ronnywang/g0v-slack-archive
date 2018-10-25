@@ -9,6 +9,14 @@ if (!$dir) {
     throw new Exception("{$dir} is not a directory");
 }
 
+try {
+    Message::createTable();
+    Channel::createTable();
+    User::createTable();
+    ChannelUser::createTable();
+} catch (Exception $e) {
+}
+
 // import channels
 if (!file_exists($dir . '/channels.json')) {
     throw new Exception("channels.json not found in {$dir}");
