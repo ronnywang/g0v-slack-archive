@@ -52,7 +52,12 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
         <?php foreach ($message_data->replies as $reply) { ?>
         <?php $reply_message = Message::find(array($this->message->channel_id, $reply->ts)) ?>
         <?php $reply_message_data = json_decode($reply_message->data) ?>
+
+        <?php if ($reply_message_data->user) { ?>
         <?php $reply_user_data = json_decode(User::find($reply_message_data->user)->data) ?>
+        <?php } else { ?>
+        <?php $reply_user_data = new stdClass; ?>
+        <?php } ?>
         <div style="padding-top: 5px">
             <div class="avatar" width="30px">
                 <img src="<?= $this->escape($reply_user_data->profile->image_72) ?>" width="24" height="24">
