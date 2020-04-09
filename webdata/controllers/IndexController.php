@@ -185,5 +185,14 @@ class IndexController extends Pix_Controller
 
         return $this->redirect('/');
     }
+
+    public function searchAction()
+    {
+        $q = $_GET['q'];
+        if (trim($q) == '') {
+            return $this->redirect('/');
+        }
+        $this->view->q = $q;
+    }
 }
 
