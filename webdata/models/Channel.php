@@ -134,14 +134,14 @@ class Channel extends Pix_Table
         $access_token = getenv('SLACK_ACCESS_TOKEN');
         $cursor = null;
         while (true) {
-            $url = sprintf("https://slack.com/api/channels.list?token=%s&cursor=%s",
+            $url = sprintf("https://slack.com/api/conversations.list?token=%s&cursor=%s",
                 urlencode($access_token),
                 urlencode($cursor)
             );
 
             $obj = json_decode(file_get_contents($url));
             if (!property_exists($obj, 'ok') or !$obj->ok) {
-                throw new MyException("fail to channels.list: " . $obj->error);
+                throw new MyException("fail to conversations.list: " . $obj->error);
             }
 
             $db = Channel::getDb();
@@ -152,6 +152,7 @@ class Channel extends Pix_Table
                     $db->quoteWithColumn('data', json_encode($channel))
                 );
             }, $obj->channels);
+
             $db->query("INSERT INTO \"channel\" (id, name, data) VALUES " . implode(',', $terms) . " ON CONFLICT (id) DO UPDATE SET name = excluded.name, data = excluded.data");
 
             if (!$obj->response_metadata->next_cursor) {
