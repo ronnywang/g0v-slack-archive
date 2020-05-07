@@ -11,11 +11,10 @@ class ChannelRow extends Pix_Table_Row
                 throw new MyException('no private channel access_token');
             }
             $access_token = $private_config->access_token;
-            $api = 'groups.history';
         } else {
             $access_token = getenv('SLACK_ACCESS_TOKEN');
-            $api = 'channels.history';
         }
+        $api = 'conversations.history';
 
         $now = time();
         $latest = time();
