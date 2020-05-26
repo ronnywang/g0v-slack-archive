@@ -231,5 +231,32 @@ class IndexController extends Pix_Controller
 
         return $this->json(0);
     }
+
+    public function getmessageAction()
+    {
+        $channel_id = $_GET['channel'];
+        if (!$channel_id) {
+            return $this->json(0);
+        }
+
+        $after = floatval($_GET['after']);
+        $ret = new StdClass;
+        $ret->messages = array();
+        if (!$after) {
+            $messages = Message::search(array('channel_id' => $channel_id))->order('ts DESC')->limit(3);
+        } else {
+            $messages = Message::search(array('channel_id' => $channel_id))->order('ts DESC')->search('ts > ' . $after)->limit(3);
+        }
+        foreach ($messages as $message) {
+            $data = json_decode($message->data);
+			$data->user = json_decode(User::find($data->user)->data);
+            $ret->messages[] = $data;
+            $after = max($after, $message->ts);
+        }
+        $ret->next_url = '/index/getmessage?channel=' . urlencode($channel_id) . '&after=' . $after;
+        header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+        header('Access-Control-Allow-Methods: GET');
+        return $this->json($ret);
+    }
 }
 
