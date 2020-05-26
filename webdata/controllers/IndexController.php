@@ -194,5 +194,42 @@ class IndexController extends Pix_Controller
         }
         $this->view->q = $q;
     }
+
+    public function callbackAction()
+    {
+        $request_body = file_get_contents('php://input');
+        $slack_signing_secret = getenv('SLACK_SIGNING_SECRET');
+        $timestamp = $_SERVER['HTTP_X_SLACK_REQUEST_TIMESTAMP'];
+        if (abs($timestamp - time()) > 60 * 5) {
+            return $this->json(array('error' => true, 'message' => 'timeout'));
+        }
+        $sig_basestring = 'v0:' . $timestamp . ':' . $request_body;
+        $my_signature = 'v0=' . hash_hmac('sha256', $sig_basestring, $slack_signing_secret);
+        if ($my_signature != $_SERVER['HTTP_X_SLACK_SIGNATURE']) {
+            return $this->json(array('error' => true, 'message' => 'signature error'));
+        }
+
+        $data = json_decode($request_body);
+        if (!$data or !property_exists($data, 'type')) {
+            return $this->json(0);
+        }
+
+        if ($data->type == 'url_verification') {
+            return $this->json(array('challenge' => $data->challenge));
+        }
+
+        if ($data->type == 'event_callback') {
+            $message = $data->event;
+            if ($message->type == 'message') {
+                Message::insert(array(
+                    'ts' => floatval($message->ts),
+                    'channel_id' => $message->channel,
+                    'data' => json_encode($message),
+                ));
+            }
+        }
+
+        return $this->json(0);
+    }
 }
 
