@@ -220,7 +220,7 @@ class IndexController extends Pix_Controller
 
         if ($data->type == 'event_callback') {
             $message = $data->event;
-            if ($message->type == 'message') {
+            if ($message->type == 'message' and !property_exists($message, 'subtype')) {
                 Message::insert(array(
                     'ts' => floatval($message->ts),
                     'channel_id' => $message->channel,
@@ -249,6 +249,9 @@ class IndexController extends Pix_Controller
         }
         foreach ($messages as $message) {
             $data = json_decode($message->data);
+			if (property_exists($data, 'subtype')) {
+				continue;
+			}
 			$data->user = json_decode(User::find($data->user)->data);
             $ret->messages[] = $data;
             $after = max($after, $message->ts);
