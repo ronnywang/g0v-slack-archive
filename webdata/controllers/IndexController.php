@@ -256,7 +256,7 @@ class IndexController extends Pix_Controller
             $ret->messages[] = $data;
             $after = max($after, $message->ts);
         }
-        $ret->next_url = '/index/getmessage?channel=' . urlencode($channel_id) . '&after=' . $after;
+        $ret->next_url = 'https://' . $_SERVER['HTTP_HOST'] . '/index/getmessage?channel=' . urlencode($channel_id) . '&after=' . $after;
         header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
         header('Access-Control-Allow-Methods: GET');
         return $this->json($ret);
