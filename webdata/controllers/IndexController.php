@@ -261,5 +261,14 @@ class IndexController extends Pix_Controller
         header('Access-Control-Allow-Methods: GET');
         return $this->json($ret);
     }
+
+    public function countAction()
+    {
+        return $this->json(array(
+            'users' => User::search(1)->count(),
+            'channels' => Channel::search(1)->count(),
+            'messages' => Message::search(1)->count(),
+        ));
+    }
 }
 
