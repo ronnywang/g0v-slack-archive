@@ -16,6 +16,7 @@ while ($row = $res->fetch_array()) {
             <th>Topic</th>
             <th>Created</th>
             <th>Message count</th>
+            <th>Members</th>
             <th>Latest posted</th>
             <th>Latest synced</th>
         </tr>
@@ -33,6 +34,7 @@ while ($row = $res->fetch_array()) {
         <?php $private_config = json_decode($channel->private_config) ?>
         <?php if (property_exists($private_config, 'access_token')) { ?>
         <td><?= $channel_count[$channel->id][0] ?></td>
+        <td><?= $data->num_members ?></td>
         <td><?= date('Y/m/d H:i:s', $channel_count[$channel->id][1])?></td>
         <td>
             <?php if ($channel->last_fetched_at) { ?>
@@ -61,6 +63,7 @@ while ($row = $res->fetch_array()) {
             <th>Topic</th>
             <th>Created</th>
             <th>Message count</th>
+            <th>Members</th>
             <th>Latest posted</th>
             <th>Latest synced</th>
         </tr>
@@ -76,6 +79,7 @@ while ($row = $res->fetch_array()) {
         <td><?= Message::getHTML($data->topic->value) ?></td>
         <td> <?= date('Y/m/d H:i:s', $data->created) ?> </td>
         <td><?= $channel_count[$channel->id][0] ?></td>
+        <td><?= $data->num_members ?></td>
         <td><?= date('Y/m/d H:i:s', $channel_count[$channel->id][1])?></td>
         <td>
             <?php if ($channel->last_fetched_at) { ?>
