@@ -238,6 +238,19 @@ class IndexController extends Pix_Controller
         if (!$channel_id) {
             return $this->json(0);
         }
+        if (!$this->view->channel = Channel::find($channel_id)) {
+            return $this->json(0);
+        }
+        $data = json_decode($this->view->channel->data);
+        if ($data->is_private) {
+            if (!$this->view->user->id) {
+                return $this->json(0);
+            }
+
+            if (!ChannelUser::search(array('channel_id' => $channel_id, 'user_id' => $this->view->user->id))->count()) {
+                return $this->json(0);
+            }
+        }
 
         $after = floatval($_GET['after']);
         $ret = new StdClass;
