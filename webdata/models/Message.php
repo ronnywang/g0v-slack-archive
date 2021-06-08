@@ -35,6 +35,7 @@ class Message extends Pix_Table
         } else {
             $text = $message_data->text;
         }
+        $text = str_replace('&amp;', '&', $text);
         while (true) {
             if (strpos($text, '<') === false) {
                 $text = str_replace('&lt;', '<', $text);
