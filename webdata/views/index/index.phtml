@@ -67,11 +67,17 @@ usort($channels, function($a, $b) {
 </table>
 <?php } ?>
 <h1>Public Channels</h1>
+<style>
+.message a {
+    word-break: break-word;
+}
+</style>
 <table class="table">
     <thead>
         <tr>
             <th>Channel</th>
             <th>Topic</th>
+            <th>Description</th>
             <th>Created</th>
             <th>Message count</th>
             <th>Members</th>
@@ -87,7 +93,8 @@ usort($channels, function($a, $b) {
         <td>
             <a href="/index/channel/<?= $channel->id ?>" title="<?= $this->escape(($channel->data)) ?>"><?= $channel->name ?></a>
         </td>
-        <td><?= Message::getHTML($data->topic->value) ?></td>
+        <td class="message"><?= Message::getHTML($data->topic->value) ?></td>
+        <td class="message"><?= Message::getHTML($data->purpose->value) ?></td>
         <td> <?= date('Y/m/d H:i:s', $data->created) ?> </td>
         <td><?= $channel_count[$channel->id][0] ?></td>
         <td><?= $data->num_members ?></td>
