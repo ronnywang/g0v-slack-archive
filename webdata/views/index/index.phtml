@@ -5,6 +5,17 @@ $channel_count = array();
 while ($row = $res->fetch_array()) {
     $channel_count[$row[0]] = array($row[1], $row[2]);
 }
+$channels = array(); 
+foreach (Channel::search(1)  as $channel) {
+    $channels[] = $channel;
+}
+usort($channels, function($a, $b) {
+    $dataa = json_decode($a->data);
+    $datab = json_decode($b->data);
+
+    return $datab->num_members - $dataa->num_members;
+
+});
 ?>
 <?= $this->partial('common/header.phtml', $this) ?>
 <?php if ($this->private_channel) { ?>
@@ -69,7 +80,7 @@ while ($row = $res->fetch_array()) {
         </tr>
     </thead>
     <tbody>
-    <?php foreach (Channel::search(1) as $channel) { ?>
+    <?php foreach ($channels as $channel) { ?>
     <?php $data = json_decode($channel->data) ?>
     <?php if (property_exists($data, 'is_private') and $data->is_private) { continue; } ?>
     <tr>
