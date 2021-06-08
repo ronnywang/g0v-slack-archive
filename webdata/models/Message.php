@@ -56,7 +56,12 @@ class Message extends Pix_Table
                 }
                 $generated_text .= '<b>' . nl2br(htmlspecialchars($name)) . '</b>';
             } elseif (strpos($special_text, 'http') === 0) {
-                $generated_text .= sprintf("<a href=\"%s\">%s</a>", htmlspecialchars($special_text), htmlspecialchars($special_text));
+                if (strpos($special_text, '|') !== false) {
+                    list($link, $linktext) = explode('|', $special_text, 2);
+                } else {
+                    $link = $linktext = $special_text;
+                }
+                $generated_text .= sprintf("<a href=\"%s\">%s</a>", htmlspecialchars($link), htmlspecialchars($linktext));
             } elseif (preg_match("/^#(.*)\|(.*)$/", $special_text, $matches)) {
                 $generated_text .= sprintf("<a href=\"/index/channel/%s\">#%s</a>", htmlspecialchars($matches[1]), htmlspecialchars($matches[2]));
             } else {
