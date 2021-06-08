@@ -56,6 +56,10 @@ class Message extends Pix_Table
                     $name = '@' . $user->name;
                 }
                 $generated_text .= '<b>' . nl2br(htmlspecialchars($name)) . '</b>';
+            } elseif (strpos($special_text, 'mailto:') === 0) {
+                list($link, $linktext) = explode('|', $special_text, 2);
+                $generated_text .= sprintf("<a href=\"%s\">%s</a>", htmlspecialchars($link), htmlspecialchars($linktext));
+
             } elseif (strpos($special_text, 'http') === 0) {
                 if (strpos($special_text, '|') !== false) {
                     list($link, $linktext) = explode('|', $special_text, 2);
