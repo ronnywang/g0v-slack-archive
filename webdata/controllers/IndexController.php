@@ -283,5 +283,20 @@ class IndexController extends Pix_Controller
             'messages' => Message::search(1)->count(),
         ));
     }
+
+    public function fileAction()
+    {
+        $url = $_GET['url'];
+        if (strpos($url, 'https://files.slack.com/') !== 0) {
+            return $this->redirect('/');
+        }
+
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Authorization: Bearer ' . getenv('SLACK_ACCESS_TOKEN'),
+        ));
+        curl_exec($curl);
+        return $this->noview();
+    }
 }
 
