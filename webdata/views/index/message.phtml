@@ -73,5 +73,13 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
         </div>
         <?php } ?>
         <?php } ?>
+
+        <?php if (property_exists($message_data, 'reactions')) { ?>
+        <div>
+            <?php foreach ($message_data->reactions as $reaction) { ?>
+            <span class="badge"><?= Message::getEmoji($reaction->name) ?> <?= $reaction->count ?></span>
+            <?php } ?>
+        </div>
+        <?php } ?>
     </div>
 </div>
