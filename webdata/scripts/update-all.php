@@ -11,3 +11,4 @@ foreach (Channel::search(1) as $channel) {
     } catch (Exception $e) {
     }
 }
+Helper::updateEmoji();
