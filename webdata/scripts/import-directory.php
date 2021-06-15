@@ -14,6 +14,7 @@ try {
     Channel::createTable();
     User::createTable();
     ChannelUser::createTable();
+    KeyValue::createTable();
 } catch (Exception $e) {
 }
 
