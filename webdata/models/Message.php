@@ -28,28 +28,37 @@ class Message extends Pix_Table
     }
 
     protected static $_emoji = null;
+    protected static $_emoji2 = null;
 
-    public static function getEmoji()
+    public static function getEmoji($id)
+    {
+        self::loadEmoji();
+
+        if (property_exists(self::$_emoji, $id)) {
+            $url = self::$_emoji->{$id};
+            if (strpos($url, 'alias:') === 0) {
+                return self::getEmoji(explode(':', $url))[1];
+            }
+            return sprintf("<img src=\"%s\" width=\"24\" height=\"24\">", $url);
+        }
+
+        if (property_exists(self::$_emoji2, $id)) {
+            return self::$_emoji2->{$id};
+        }
+        return null;
+    }
+
+    public static function loadEmoji()
     {
         if (is_null(self::$_emoji)) {
             self::$_emoji = json_decode(KeyValue::get('emoji'));
-
-            foreach (self::$_emoji as $id => $url) {
-                if (strpos($url, 'alias:') === 0) {
-                    list(, $id2) = explode(':', $url, 2);
-                    if (property_exists(self::$_emoji, $id2)) {
-                        self::$_emoji->{$id} = self::$_emoji->{$id2};
-                    }
-                }
-            }
+            self::$_emoji2 = json_decode(file_get_contents(__DIR__ . "/../emojis.json"));
         }
-        return self::$_emoji;
     }
 
     public static function getHTML($message_data)
     {
         $generated_text = '';
-        $emoji = self::getEmoji();
         if (is_scalar($message_data)) {
             $text = $message_data;
         } else {
@@ -96,10 +105,12 @@ class Message extends Pix_Table
 
         $generated_text = preg_replace_callback('#:([^:]+):#', function($matches) use ($emoji) {
             $id = $matches[1];
-            if (property_exists($emoji, $id)) {
-                return sprintf("<img src=\"%s\" width=\"24\" height=\"24\">", htmlspecialchars($emoji->{$id}));
+
+            $str = Message::getEmoji($id);
+            if (is_null($str)) {
+                return ":{$id}:";
             }
-            return $matches[0];
+            return $str;
         }, $generated_text);
         return $generated_text;
     }
