@@ -27,9 +27,29 @@ class Message extends Pix_Table
         return $user_data->name;
     }
 
+    protected static $_emoji = null;
+
+    public static function getEmoji()
+    {
+        if (is_null(self::$_emoji)) {
+            self::$_emoji = json_decode(KeyValue::get('emoji'));
+
+            foreach (self::$_emoji as $id => $url) {
+                if (strpos($url, 'alias:') === 0) {
+                    list(, $id2) = explode(':', $url, 2);
+                    if (property_exists(self::$_emoji, $id2)) {
+                        self::$_emoji->{$id} = self::$_emoji->{$id2};
+                    }
+                }
+            }
+        }
+        return self::$_emoji;
+    }
+
     public static function getHTML($message_data)
     {
         $generated_text = '';
+        $emoji = self::getEmoji();
         if (is_scalar($message_data)) {
             $text = $message_data;
         } else {
@@ -73,6 +93,14 @@ class Message extends Pix_Table
                 $generated_text .= '&lt;' . $special_text . '&gt;';
             }
         }
+
+        $generated_text = preg_replace_callback('#:([^:]+):#', function($matches) use ($emoji) {
+            $id = $matches[1];
+            if (property_exists($emoji, $id)) {
+                return sprintf("<img src=\"%s\" width=\"24\" height=\"24\">", htmlspecialchars($emoji->{$id}));
+            }
+            return $matches[0];
+        }, $generated_text);
         return $generated_text;
     }
 }
