@@ -265,7 +265,8 @@ class IndexController extends Pix_Controller
 			if (property_exists($data, 'subtype')) {
 				continue;
 			}
-			$data->user = json_decode(User::find($data->user)->data);
+            $data->user = json_decode(User::find($data->user)->data);
+            $data->html_content = Message::getHTML($data);
             $ret->messages[] = $data;
             $after = max($after, $message->ts);
         }
