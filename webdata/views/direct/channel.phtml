@@ -1,0 +1,81 @@
+<?php
+
+$this->title = $this->channel->getName($this->user);
+$this->messages = DirectMessage::search(array('channel_id' => $this->channel->id));
+
+$timezoom_offset = date('Z');
+$sql = "SELECT FLOOR((ts + {$timezoom_offset}) / 86400), COUNT(*) FROM direct_message WHERE channel_id = '{$this->channel->id}' GROUP BY FLOOR((ts + {$timezoom_offset}) / 86400)";
+$res = DirectMessage::getDb()->query($sql);
+$month_count = array();
+while ($row = $res->fetch_array()) {
+    list($t, $count) = $row;
+    $t = $t * 86400 + $timezoom_offset;
+    $month = date('Y-m', $t);
+    if (!array_key_exists($month, $month_count)) {
+        $month_count[$month] = 0;
+    }
+    $month_count[$month] += $count;
+}
+ksort($month_count);
+
+if ($this->next_date) {
+    $range_term = "ts >= {$this->current_date} AND ts < {$this->next_date}";
+} else {
+    $range_term = "ts >= {$this->current_date}";
+}
+$thread_tss = $this->messages->search($range_term)->toArray('ts');
+if ($thread_tss) {
+    $reply_threads = DirectMessage::search(array('channel_id' => $this->channel->id))->search("(data->>'thread_ts')::NUMERIC IN (" . implode(',', $thread_tss) . ")");
+    $reply_messages = array();
+    foreach ($reply_threads as $reply) {
+        $data = json_decode($reply->data);
+        if ($data->thread_ts == $reply->ts) {
+            continue;
+        }
+        if (!array_key_exists($data->thread_ts, $reply_messages)) {
+            $reply_messages[$data->thread_ts] = array();
+        }
+        $reply_messages[floatval($data->thread_ts)][$reply->ts] = $reply;
+    }
+}
+?>
+<?= $this->partial('common/header.phtml', $this) ?>
+<style>
+.message .avatar {
+    float: left;
+    padding-right: 5px;
+}
+
+.message .content {
+    overflow: hidden;
+    padding-bottom: 10px;
+}
+
+.message {
+    clear: both;
+}
+</style>
+<h1><?= $this->escape($this->channel->getName($this->user)) ?></h1>
+<h3>Month: <?= date('Y-m', $this->current_date) ?></h3>
+<div class="pagination">
+    <ul>
+    <?php foreach ($month_count as $month => $count) { ?>
+    <li <?= (date('Y-m', $this->current_date) == $month) ? ' class="active"': ''?>>
+    <a href="/direct/channel/<?= $this->channel->id ?>/<?= $month ?>"><?= $month ?>
+        (<?= $count ?>)
+    </a>
+    </li>
+    <?php } ?>
+</ul>
+</div>
+<?php $current_date = null; ?>
+<?php foreach ($this->messages->search($range_term)->order('ts ASC') as $message) { ?>
+<?php if (is_null($current_date) or date('Y-m-d', $message->ts) != $current_date) { ?>
+<?php $current_date = date('Y-m-d', $message->ts) ?>
+<h4><?= $current_date ?></h4>
+<?php } ?>
+<?= $this->partial('/index/message.phtml', array('message' => $message, 'replies' => $reply_messages[floatval($message->ts)])) ?>
+<div style="clear:both"></div>
+<?php } ?>
+<?= $this->partial('common/footer.phtml', $this) ?>
+

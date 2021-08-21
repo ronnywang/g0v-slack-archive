@@ -1,0 +1,80 @@
+<?php
+$channel_ids = DirectChannelUser::search(array('user_id' => $this->user->id))->toArray('channel_id');
+$sql = "SELECT channel_id, count(*), max(ts) FROM direct_message WHERE channel_id IN ('" . implode('\',\'', $channel_ids) . "') GROUP BY channel_id";
+$res = Message::getDb()->query($sql);
+$channel_count = array();
+while ($row = $res->fetch_array()) {
+    $channel_count[$row[0]] = array($row[1], $row[2]);
+}
+
+$channels = array(); 
+foreach (DirectChannel::search(1)->searchIn('id', $channel_ids)  as $channel) {
+    $channels[] = $channel;
+}
+usort($channels, function($a, $b) use ($channel_count) {
+    return $channel_count[$b->id][1] - $channel_count[$a->id][1];
+});
+$duser = DirectUser::find($this->user->id);
+$data = json_decode($duser->data);
+?>
+<?= $this->partial('common/header.phtml', $this) ?>
+<h1>Direct Messages</h1>
+<style>
+.message a {
+    word-break: break-word;
+}
+</style>
+<?php if (!$data->fetch_link_at) { ?>
+<a href="/direct/reloadlink" class="btn btn-primary">更新列表</a>
+<?php } ?>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Channel</th>
+            <th>Created</th>
+            <th>Message count</th>
+            <th>Members</th>
+            <th>Latest posted</th>
+            <th>
+                Latest synced
+                <a class="btn btn-primary" id="update-all">Update All</a>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($channels as $channel) { ?>
+    <?php $data = json_decode($channel->data) ?>
+    <tr>
+        <td>
+            <a href="/direct/channel/<?= $channel->id ?>" title="<?= $this->escape(($channel->data)) ?>"><?= $channel->getName($this->user) ?></a>
+        </td>
+        <td> <?= date('Y/m/d H:i:s', $data->created) ?> </td>
+        <td><?= $channel_count[$channel->id][0] ?></td>
+        <td><?= $data->num_members ?></td>
+        <td><?= date('Y/m/d H:i:s', $channel_count[$channel->id][1])?></td>
+        <td>
+            <?php if ($channel->last_fetched_at) { ?>
+            <?= date('Y/m/d H:i:s', $channel->last_fetched_at) ?>
+            <?php } else { ?>
+            not yet
+            <?php } ?>
+            <?php if ($channel->last_fetched_at < time() - 7 * 86400) { ?>
+            <a href="/direct/update?id=<?= $channel->id ?>" class="btn-primary btn reload-link">Update</a>
+            <?php } ?>
+        </td>
+    <?php } ?>
+    </tbody>
+</ul>
+<script>
+$('#update-all').click(function(){
+    if (!$('.reload-link').length) {
+        return;
+    }
+    document.location = $('.reload-link').attr('href') + '&autonext=1';
+});
+
+if (document.location.href.match(/autonext=1/)) {
+    $('#update-all').click();
+}
+</script>
+<?= $this->partial('common/footer.phtml', $this) ?>
