@@ -15,7 +15,7 @@ if (file_exists(__DIR__ . '/config.php')) {
 Pix_Table::setLongQueryTime(3);
 // TODO: 之後要搭配 geoip
 date_default_timezone_set('Asia/Taipei');
-Pix_Table::addStaticResultSetHelper(Pix_Array_Volume);
+Pix_Table::addStaticResultSetHelper('Pix_Array_Volume');
 
 
 if (preg_match('#pgsql://([^:]*):([^@]*)@([^/]*)/(.*)#', strval(getenv('PGSQL_DATABASE_URL')), $matches)) {
