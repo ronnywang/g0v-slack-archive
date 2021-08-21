@@ -27,6 +27,22 @@ class DirectChannelRow extends Pix_Table_Row
         foreach ($users as $user) {
             $access_token = json_decode($user->data)->access_token;
         }
+        $api = 'conversations.info';
+        $url = sprintf("https://slack.com/api/{$api}?token=%s&channel=%s",
+            urlencode($access_token),
+            urlencode($this->id)
+        );
+
+        $max_ts = DirectMessage::search(array('channel_id' => $this->id))->max('ts')->ts;
+        $obj = json_decode(file_get_contents($url));
+        if (!$obj->channel->latest) {
+            $this->update(array('last_fetched_at' => $now));
+            return;
+        }
+        if ($obj->channel->latest->ts <= $max_ts) {
+            $this->update(array('last_fetched_at' => $now));
+            return;
+        }
 
         $api = 'conversations.history';
 
