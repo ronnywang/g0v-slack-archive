@@ -107,6 +107,18 @@ class IndexController extends Pix_Controller
             Pix_Session::set('private_channel', json_encode(array_map(function($channel){
                 return $channel->id;
             }, $private_obj->channels)));
+        } else if ($_GET['state'] == 'im') {
+            if (!DirectUser::find($user_id)) {
+                DirectUser::insert(array(
+                    'id' => $user_id,
+                    'created_at' => time(),
+                    'data' => '{}',
+                ));
+            }
+            $du = DirectUser::find($user_id);
+            $data = json_decode($du->data);
+            $data->access_token = $access_token;
+            $du->update(array('data' => json_encode($data)));
         } else {
             Pix_Session::set('private_channel', json_encode(array_values(ChannelUser::search(array('user_id' => $user_id))->toArray('channel_id'))));
         }
@@ -146,6 +158,15 @@ class IndexController extends Pix_Controller
                 urlencode("groups:history,groups:read,channels:read"), // scope
                 urlencode($redirect_uri), // redirect_uri
                 "backup", // state
+                "" // team
+            );
+            return $this->redirect($url);
+        } elseif ($_GET['type'] == 'im') {
+            $url = sprintf("https://slack.com/oauth/authorize?client_id=%s&scope=%s&redirect_uri=%s&state=%s&team=%s",
+                urlencode($client_id), // client_id
+                urlencode("im:history,im:read"), // scope
+                urlencode($redirect_uri), // redirect_uri
+                "im", // state
                 "" // team
             );
             return $this->redirect($url);
