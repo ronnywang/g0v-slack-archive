@@ -6,6 +6,9 @@ if ($message_data->user and $user = User::find($message_data->user)) {
 } else {
     $avatar = 'https://ca.slack-edge.com/T02G2SXKM-UD94JT3KQ-g8c100274e62-48';
 }
+if (!property_exists($message_data, 'replies') and $this->replies) { 
+    $message_data->replies = $this->replies;
+}
 
 $style = '';
 if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {

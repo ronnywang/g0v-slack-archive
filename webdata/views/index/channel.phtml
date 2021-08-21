@@ -23,6 +23,18 @@ if ($this->next_date) {
 } else {
     $range_term = "ts >= {$this->current_date}";
 }
+$thread_tss = $this->messages->search($range_term)->toArray('ts');
+if ($thread_tss) {
+    $reply_threads = Message::search("(data->>'thread_ts')::NUMERIC IN (" . implode(',', $thread_tss) . ")");
+    $reply_messages = array();
+    foreach ($reply_threads as $reply) {
+        $data = json_decode($reply->data);
+        if (!array_key_exists($data->thread_ts, $reply_messages)) {
+            $reply_messages[$data->thread_ts] = array();
+        }
+        $reply_messages[floatval($data->thread_ts)][$reply->ts] = $reply;
+    }
+}
 ?>
 <?= $this->partial('common/header.phtml', $this) ?>
 <style>
@@ -59,7 +71,7 @@ if ($this->next_date) {
 <?php $current_date = date('Y-m-d', $message->ts) ?>
 <h4><?= $current_date ?></h4>
 <?php } ?>
-<?= $this->partial('/index/message.phtml', array('message' => $message)) ?>
+<?= $this->partial('/index/message.phtml', array('message' => $message, 'replies' => $reply_messages[floatval($message->ts)])) ?>
 <div style="clear:both"></div>
 <?php } ?>
 <?= $this->partial('common/footer.phtml', $this) ?>
