@@ -29,6 +29,9 @@ if ($thread_tss) {
     $reply_messages = array();
     foreach ($reply_threads as $reply) {
         $data = json_decode($reply->data);
+        if ($data->thread_ts == $reply->ts) {
+            continue;
+        }
         if (!array_key_exists($data->thread_ts, $reply_messages)) {
             $reply_messages[$data->thread_ts] = array();
         }
