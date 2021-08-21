@@ -33,6 +33,7 @@ class DirectChannelRow extends Pix_Table_Row
             urlencode($this->id)
         );
 
+        $now = time();
         $max_ts = DirectMessage::search(array('channel_id' => $this->id))->max('ts')->ts;
         $obj = json_decode(file_get_contents($url));
         if (!$obj->channel->latest) {
@@ -46,7 +47,6 @@ class DirectChannelRow extends Pix_Table_Row
 
         $api = 'conversations.history';
 
-        $now = time();
         $latest = time();
         $last_fetched_at = $this->last_fetched_at;
         $messages = array();
