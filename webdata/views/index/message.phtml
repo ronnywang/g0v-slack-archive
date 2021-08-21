@@ -8,6 +8,7 @@ if ($message_data->user and $user = User::find($message_data->user)) {
 }
 if (!property_exists($message_data, 'replies') and $this->replies) { 
     $message_data->replies = $this->replies;
+    ksort($message_data->replies);
 }
 
 $style = '';
