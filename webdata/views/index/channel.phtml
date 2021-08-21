@@ -25,7 +25,7 @@ if ($this->next_date) {
 }
 $thread_tss = $this->messages->search($range_term)->toArray('ts');
 if ($thread_tss) {
-    $reply_threads = Message::search("(data->>'thread_ts')::NUMERIC IN (" . implode(',', $thread_tss) . ")");
+    $reply_threads = Message::search(array('channel_id' => $this->channel->id))->search("(data->>'thread_ts')::NUMERIC IN (" . implode(',', $thread_tss) . ")");
     $reply_messages = array();
     foreach ($reply_threads as $reply) {
         $data = json_decode($reply->data);
