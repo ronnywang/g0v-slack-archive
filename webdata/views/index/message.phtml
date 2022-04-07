@@ -69,7 +69,7 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
             <div class="content">
                 <div>
                     <span class="user-name" title="<?= htmlspecialchars(json_encode($reply_user_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><strong><?= $this->escape(Message::getUserName($reply_message_data->user)) ?></strong></span>
-                    <span class="message-time" title="<?= htmlspecialchars(json_encode($reply_message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a href="#ts-<?= $reply_message->ts ?>"><?= date('H:i:s', $reply_message->ts) ?></a></span>
+                    <span class="message-time" title="<?= htmlspecialchars(json_encode($reply_message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a href="#ts-<?= $reply_message->ts ?>"><?= date('Y-m-d H:i:s', $reply_message->ts) ?></a></span>
                 </div>
                 <div><?= Message::getHTML($reply_message_data) ?></div>
             </div>
