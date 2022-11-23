@@ -250,6 +250,17 @@ class IndexController extends Pix_Controller
             }
         }
 
+        if (getenv('EVENT_FORWARD_URL')) {
+            $curl = curl_init(getenv('EVENT_FORWARD_URL'));
+            curl_setopt($curl, CURLOPT_POSTFIEDS, $data);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, [
+                "Content-Type: text/json",
+            ]);
+            curl_exec($curl);
+            curl_close($curl);
+        }
+
         return $this->json(0);
     }
 
@@ -273,13 +284,22 @@ class IndexController extends Pix_Controller
             }
         }
 
-        $after = floatval($_GET['after']);
+        if (array_key_exists('count', $_GET)) {
+            $c = min(100, intval($_GET['count']));
+        } else {
+            $c = 3;
+        }
         $ret = new StdClass;
         $ret->messages = array();
-        if (!$after) {
-            $messages = Message::search(array('channel_id' => $channel_id))->order('ts DESC')->limit(3);
+        $after = $before = null;
+        if (array_key_exists('after', $_GET)) {
+            $after = floatval($_GET['after']);
+            $messages = Message::search(array('channel_id' => $channel_id))->order('ts DESC')->search('ts > ' . $after)->limit($c);
+        } else if (array_key_exists('before', $_GET)) {
+            $before = floatval($_GET['before']);
+            $messages = Message::search(array('channel_id' => $channel_id))->order('ts DESC')->search('ts < ' . $before)->limit($c);
         } else {
-            $messages = Message::search(array('channel_id' => $channel_id))->order('ts DESC')->search('ts > ' . $after)->limit(3);
+            $messages = Message::search(array('channel_id' => $channel_id))->order('ts DESC')->limit($c);
         }
         foreach ($messages as $message) {
             $data = json_decode($message->data);
@@ -289,9 +309,19 @@ class IndexController extends Pix_Controller
             $data->user = json_decode(User::find($data->user)->data);
             $data->html_content = Message::getHTML($data);
             $ret->messages[] = $data;
-            $after = max($after, $message->ts);
+            if (is_null($after)) {
+                $after = $message->ts;
+            } else {
+                $after = max($after, $message->ts);
+            }
+            if (is_null($before)) {
+                $before = $message->ts;
+            } else {
+                $before = min($before, $message->ts);
+            }
         }
-        $ret->next_url = 'https://' . $_SERVER['HTTP_HOST'] . '/index/getmessage?channel=' . urlencode($channel_id) . '&after=' . $after;
+        $ret->next_url = 'https://' . $_SERVER['HTTP_HOST'] . '/index/getmessage?channel=' . urlencode($channel_id) . '&after=' . $after . '&count=' . $c;
+        $ret->previous_url = 'https://' . $_SERVER['HTTP_HOST'] . '/index/getmessage?channel=' . urlencode($channel_id) . '&before=' . $before . '&count=' . $c;
         header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
         header('Access-Control-Allow-Methods: GET');
         return $this->json($ret);
