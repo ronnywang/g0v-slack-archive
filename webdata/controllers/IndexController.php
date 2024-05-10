@@ -19,6 +19,43 @@ class IndexController extends Pix_Controller
         }
     }
 
+    public function rssAction()
+    {
+        list(,/*index*/, /*rss*/, $channel_id) = explode('/', $this->getURI());
+        if (!$channel = Channel::find($channel_id)) {
+            return $this->alert('channel not found', '/');;
+        }
+
+        $data = json_decode($channel->data);
+        if ($data->is_private) {
+            return $this->alert('channel not found', '/');
+        }
+        $messages = Message::search(array('channel_id' => $channel->id))->order('ts DESC')->limit(30);
+
+        $rss = new SimpleXMLElement('<rss version="2.0"></rss>');
+        $channel = $rss->addChild('channel');
+        $channel->addChild('title', $channel->name);
+        $channel->addChild('link', 'https://' . $_SERVER['HTTP_HOST'] . '/index/channel/' . $channel->id);
+        $channel->addChild('description', $channel->name);
+        $channel->addChild('language', 'zh-tw');
+        foreach ($messages as $message) {
+            $data = json_decode($message->data);
+            if ($data->subtype ?? false) {
+                continue;
+            }
+            $item = $channel->addChild('item');
+            $user = User::find($data->user);
+            $item->addChild('title', $user->name . '@' . date('Y-m-d H:i:s', $message->ts));
+            $item->addChild('link', 'https://' . $_SERVER['HTTP_HOST'] . '/index/channel/' . $channel->id . '/' . date('Y-m', $message->ts));
+            $item->addChild('description', Message::getHTML($data));
+            $item->addChild('pubDate', date('r', $message->ts));
+        }
+        header('Content-Type: text/xml');
+        //header('Content-Type: application/rss+xml');
+        echo $rss->asXML();
+        return $this->noview();
+    }
+
     public function channelAction()
     {
         list(,/*index*/, /*channel*/, $channel_id, $date) = explode('/', $this->getURI());
