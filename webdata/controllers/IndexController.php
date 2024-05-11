@@ -33,20 +33,20 @@ class IndexController extends Pix_Controller
         $messages = Message::search(array('channel_id' => $channel->id))->order('ts DESC')->limit(30);
 
         $rss = new SimpleXMLElement('<rss version="2.0"></rss>');
-        $channel = $rss->addChild('channel');
-        $channel->addChild('title', $channel->name);
-        $channel->addChild('link', 'https://' . $_SERVER['HTTP_HOST'] . '/index/channel/' . $channel->id);
-        $channel->addChild('description', $channel->name);
-        $channel->addChild('language', 'zh-tw');
+        $obj = $rss->addChild('channel');
+        $obj->addChild('title', $channel->name);
+        $obj->addChild('link', 'https://' . $_SERVER['HTTP_HOST'] . '/index/channel/' . $channel->id);
+        $obj->addChild('description', $channel->name);
+        $obj->addChild('language', 'zh-tw');
         foreach ($messages as $message) {
             $data = json_decode($message->data);
             if ($data->subtype ?? false) {
                 continue;
             }
-            $item = $channel->addChild('item');
+            $item = $obj->addChild('item');
             $user = User::find($data->user);
             $item->addChild('title', $user->name . '@' . date('Y-m-d H:i:s', $message->ts));
-            $item->addChild('link', 'https://' . $_SERVER['HTTP_HOST'] . '/index/channel/' . $channel->id . '/' . date('Y-m', $message->ts));
+            $item->addChild('link', 'https://' . $_SERVER['HTTP_HOST'] . '/index/channel/' . $channel->id . '/' . date('Y-m', $message->ts) . '#ts-' . $message->ts);
             $item->addChild('description', Message::getHTML($data));
             $item->addChild('pubDate', date('r', $message->ts));
         }
