@@ -239,7 +239,7 @@ class IndexController extends Pix_Controller
             )),
         ));
 
-        $channel->fetchMessages();
+        $channel->fetchMessages($fetch_all = true);
 
         return $this->redirect('/');
     }

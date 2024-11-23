@@ -2,7 +2,7 @@
 
 class ChannelRow extends Pix_Table_Row
 {
-    public function fetchMessages()
+    public function fetchMessages($fetch_all = false)
     {
         $data = json_decode($this->data);
         if ($data->is_private) {
@@ -33,7 +33,7 @@ class ChannelRow extends Pix_Table_Row
             }
 
             foreach ($obj->messages as $message) {
-                if (floatval($message->ts) <= $last_fetched_at - 2 * 86400) {
+                if (!$fetch_all and floatval($message->ts) <= $last_fetched_at - 2 * 86400) {
                     break 2;
                 }
                 $messages[] = $message;
