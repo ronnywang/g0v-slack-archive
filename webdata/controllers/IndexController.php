@@ -122,7 +122,6 @@ class IndexController extends Pix_Controller
         $url = sprintf('https://slack.com/api/users.identity?token=%s', urlencode($access_token));
         $obj = json_decode(file_get_contents($url));
         if (!$obj->ok) {
-            file_put_contents("/tmp/slack-error.log." . date('YmdHis'), json_encode($obj, JSON_UNESCAPED_UNICODE));
             return $this->alert($obj->error, '/index/login');
         }
 
@@ -193,7 +192,7 @@ class IndexController extends Pix_Controller
         } elseif ($_GET['type'] == 'backup') {
             $url = sprintf("https://slack.com/oauth/authorize?client_id=%s&scope=%s&redirect_uri=%s&state=%s&team=%s",
                 urlencode($client_id), // client_id
-                urlencode("groups:history,groups:read,channels:read,identity.basic"), // scope
+                urlencode("identify,groups:history,groups:read,channels:read"), // scope
                 urlencode($redirect_uri), // redirect_uri
                 "backup", // state
                 "" // team
@@ -202,7 +201,7 @@ class IndexController extends Pix_Controller
         } elseif ($_GET['type'] == 'im') {
             $url = sprintf("https://slack.com/oauth/authorize?client_id=%s&scope=%s&redirect_uri=%s&state=%s&team=%s",
                 urlencode($client_id), // client_id
-                urlencode("im:history,im:read,identity.basic"), // scope
+                urlencode("im:history,im:read,identify"), // scope
                 urlencode($redirect_uri), // redirect_uri
                 "im", // state
                 "" // team
