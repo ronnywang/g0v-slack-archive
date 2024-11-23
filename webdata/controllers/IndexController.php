@@ -122,6 +122,7 @@ class IndexController extends Pix_Controller
         $url = sprintf('https://slack.com/api/users.identity?token=%s', urlencode($access_token));
         $obj = json_decode(file_get_contents($url));
         if (!$obj->ok) {
+            file_put_contents("/tmp/slack-error.log." . date('YmdHis'), json_encode($obj, JSON_UNESCAPED_UNICODE));
             return $this->alert($obj->error, '/index/login');
         }
 
