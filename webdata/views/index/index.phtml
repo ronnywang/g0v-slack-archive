@@ -53,6 +53,9 @@ usort($channels, function($a, $b) {
             <?php } else { ?>
             not yet
             <?php } ?>
+            <form method="post" action="/index/addprivatechannel?channel=<?= urlencode($channel->id) ?>">
+               <button type="submit">手動同步</button>
+            </form>
         </td>
         <?php } else { ?>
         <td colspan="3">
