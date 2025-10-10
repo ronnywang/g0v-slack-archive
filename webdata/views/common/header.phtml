@@ -18,6 +18,7 @@ $title_terms[] = 'slack archive';
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= $this->escape(implode(' | ', $title_terms)) ?></title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
 <?php if (getenv('GOOGLEANALYTICS_ACCOUNT')) { ?>
@@ -35,33 +36,33 @@ _gaq.push(['_trackPageview']);
 <?php } ?>
 </head>
 <body class="<?= $this->escape($this->body_class) ?>">
-<div class="navbar">
-    <div class="navbar-inner">
-        <a class="brand" href="/">Slack archive</a>
-        <ul class="nav">
-            <li>
-            <a href="/">Channels</a>
-            </li>
-            <li>
-            <a href="https://github.com/ronnywang/g0v-slack-archive">Source Code</a>
-            </li>
-            <?php if ($this->user) { ?>
-            <li class="dropdown">
-            <a data-toggle="dropdown" class="dropdown-toggle" href="#">Hi! <?= $this->escape($this->user->name) ?><b class="caret"></b></a>
-            <ul class="dropdown-menu">
-                <li class="divider"></li>
-                <li><a href="/index/logout">登出</a></li>
+<div class="navbar sticky-top navbar-expand-lg bg-body-secondary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Slack archive</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Navigation">
+              <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarToggle">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="https://github.com/ronnywang/g0v-slack-archive"><i class="bi bi-github" aria-hidden></i><span class="ms-2 d-md-none">Source Code</span></a>
+                </li>
+                <?php if ($this->user) { ?>
+                <li class="nav-item dropdown">
+                    <button class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-check-fill" aria-hidden></i><span class="ms-2 d-md-none">Authenticated</span></button>
+                    <ul class="dropdown-menu">
+                        <li><h6 class="dropdown-header">Hi <?= $this->escape($this->user->name) ?>!</h6></li>
+                        <li><a class="dropdown-item" href="/index/logout">Logout</a></li>
+                    </ul>
+                </li>
+                <?php } else { ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="/index/login/"><i class="bi bi-slack me-2" aria-hidden></i>Login with Slack</a>
+                </li>
+                <?php } ?>
             </ul>
-            </li>
-            <?php } else { ?>
-            <li>
-            <a href="/index/login/">Login with Slack</a>
-            </li>
-            <?php } ?>
-        </ul>
-        <div class="nav-collapse collapse">
-            <form class="navbar-form pull-right" method="get" action="/index/search">
-                <input type="text" name="q" placeholder="search">
+            <form class="d-flex" role="search" method="get" action="/index/search">
+                <input class="form-control me-2" type="search" name="q" placeholder="Search">
             </form>
         </div>
     </div>
