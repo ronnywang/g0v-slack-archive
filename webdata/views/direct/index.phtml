@@ -20,8 +20,17 @@ $data = json_decode($duser->data);
 <?= $this->partial('common/header.phtml', $this) ?>
 
 <style>
-.message a {
+.table thead.position-sticky {
+    top: 3.5rem;
+}
+
+.table th[scope="row"] {
+    max-width: 12em;
+}
+
+.message a, .channel {
     word-break: break-word;
+    text-wrap: balance;
 }
 </style>
 
@@ -31,7 +40,7 @@ $data = json_decode($duser->data);
         <div class="d-flex align-items-baseline">
             <h2 class="h4 text-body-emphasis me-4">Public Channels</h2>
             <?php if (!$data->fetch_link_at) { ?>
-            <a href="/direct/reloadlink" class="btn btn-outline-primary"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>更新列表</a>
+            <a class="btn btn-outline-primary" href="/direct/reloadlink" role="button"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>更新列表</a>
             <?php } ?>
         </div>
     </caption>
@@ -42,9 +51,9 @@ $data = json_decode($duser->data);
             <th scope="col">Messages</th>
             <th scope="col">Members</th>
             <th scope="col">Last Posted</th>
+            <th scope="col">Last Synced</th>
             <th scope="col">
-                Last Synced
-                <a class="btn btn-primary" id="update-all">Update All</a>
+                <button class="btn btn-primary btn-sm" id="update-all" title="Update All"><i class="bi bi-fast-forward" aria-hidden="true"></i></button>
             </th>
         </tr>
     </thead>
@@ -56,8 +65,8 @@ $data = json_decode($duser->data);
                 <a class="channel" href="/direct/channel/<?= $channel->id ?>" title="<?= $this->escape(($channel->data)) ?>"><?= $channel->getName($this->user) ?></a>
             </th>
             <td><?= date('Y/m/d H:i:s', $data->created) ?></td>
-            <td><?= $channel_count[$channel->id][0] ?></td>
-            <td><?= $data->num_members ?></td>
+            <td class="text-end"><?= $channel_count[$channel->id][0] ?></td>
+            <td class="text-end"><?= $data->num_members ?></td>
             <td><?= date('Y/m/d H:i:s', $channel_count[$channel->id][1])?></td>
             <td>
                 <?php if ($channel->last_fetched_at) { ?>
@@ -65,8 +74,10 @@ $data = json_decode($duser->data);
                 <?php } else { ?>
                     not yet
                 <?php } ?>
+            </td>
+            <td>
                 <?php if ($channel->last_fetched_at < time() - 7 * 86400) { ?>
-                    <a href="/direct/update?id=<?= $channel->id ?>" class="btn-primary btn reload-link">Update</a>
+                    <a class="btn btn-outline-secondary btn-sm reload-link" href="/direct/update?id=<?= $channel->id ?>" role="button" title="Update"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i></a>
                 <?php } ?>
             </td>
         </tr>
