@@ -7,7 +7,7 @@ while ($row = $res->fetch_array()) {
     $channel_count[$row[0]] = array($row[1], $row[2]);
 }
 
-$channels = array(); 
+$channels = array();
 foreach (DirectChannel::search(1)->searchIn('id', $channel_ids)  as $channel) {
     $channels[] = $channel;
 }
@@ -18,53 +18,63 @@ $duser = DirectUser::find($this->user->id);
 $data = json_decode($duser->data);
 ?>
 <?= $this->partial('common/header.phtml', $this) ?>
-<h1>Direct Messages</h1>
+
 <style>
 .message a {
     word-break: break-word;
 }
 </style>
-<?php if (!$data->fetch_link_at) { ?>
-<a href="/direct/reloadlink" class="btn btn-primary">更新列表</a>
-<?php } ?>
-<table class="table">
-    <thead>
+
+<section class="table-responsive-lg">
+<table class="table table-hover caption-top">
+    <caption>
+        <div class="d-flex align-items-baseline">
+            <h2 class="h4 text-body-emphasis me-4">Public Channels</h2>
+            <?php if (!$data->fetch_link_at) { ?>
+            <a href="/direct/reloadlink" class="btn btn-outline-primary"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>更新列表</a>
+            <?php } ?>
+        </div>
+    </caption>
+    <thead class="position-sticky">
         <tr>
-            <th>Channel</th>
-            <th>Created</th>
-            <th>Message count</th>
-            <th>Members</th>
-            <th>Latest posted</th>
-            <th>
-                Latest synced
+            <th scope="col">Channel</th>
+            <th scope="col">Created</th>
+            <th scope="col">Messages</th>
+            <th scope="col">Members</th>
+            <th scope="col">Last Posted</th>
+            <th scope="col">
+                Last Synced
                 <a class="btn btn-primary" id="update-all">Update All</a>
             </th>
         </tr>
     </thead>
     <tbody>
-    <?php foreach ($channels as $channel) { ?>
-    <?php $data = json_decode($channel->data) ?>
-    <tr>
-        <td>
-            <a href="/direct/channel/<?= $channel->id ?>" title="<?= $this->escape(($channel->data)) ?>"><?= $channel->getName($this->user) ?></a>
-        </td>
-        <td> <?= date('Y/m/d H:i:s', $data->created) ?> </td>
-        <td><?= $channel_count[$channel->id][0] ?></td>
-        <td><?= $data->num_members ?></td>
-        <td><?= date('Y/m/d H:i:s', $channel_count[$channel->id][1])?></td>
-        <td>
-            <?php if ($channel->last_fetched_at) { ?>
-            <?= date('Y/m/d H:i:s', $channel->last_fetched_at) ?>
-            <?php } else { ?>
-            not yet
-            <?php } ?>
-            <?php if ($channel->last_fetched_at < time() - 7 * 86400) { ?>
-            <a href="/direct/update?id=<?= $channel->id ?>" class="btn-primary btn reload-link">Update</a>
-            <?php } ?>
-        </td>
-    <?php } ?>
+        <?php foreach ($channels as $channel) { ?>
+        <?php $data = json_decode($channel->data) ?>
+        <tr>
+            <th scope="row">
+                <a class="channel" href="/direct/channel/<?= $channel->id ?>" title="<?= $this->escape(($channel->data)) ?>"><?= $channel->getName($this->user) ?></a>
+            </th>
+            <td><?= date('Y/m/d H:i:s', $data->created) ?></td>
+            <td><?= $channel_count[$channel->id][0] ?></td>
+            <td><?= $data->num_members ?></td>
+            <td><?= date('Y/m/d H:i:s', $channel_count[$channel->id][1])?></td>
+            <td>
+                <?php if ($channel->last_fetched_at) { ?>
+                    <?= date('Y/m/d H:i:s', $channel->last_fetched_at) ?>
+                <?php } else { ?>
+                    not yet
+                <?php } ?>
+                <?php if ($channel->last_fetched_at < time() - 7 * 86400) { ?>
+                    <a href="/direct/update?id=<?= $channel->id ?>" class="btn-primary btn reload-link">Update</a>
+                <?php } ?>
+            </td>
+        </tr>
+        <?php } ?>
     </tbody>
-</ul>
+</table>
+</section>
+
 <script>
 $('#update-all').click(function(){
     if (!$('.reload-link').length) {
@@ -77,4 +87,5 @@ if (document.location.href.match(/autonext=1/)) {
     $('#update-all').click();
 }
 </script>
+
 <?= $this->partial('common/footer.phtml', $this) ?>
