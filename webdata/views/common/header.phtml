@@ -36,20 +36,20 @@ _gaq.push(['_trackPageview']);
 <?php } ?>
 </head>
 <body class="<?= $this->escape($this->body_class) ?>">
-<div class="navbar sticky-top navbar-expand-lg bg-body-secondary">
+<nav class="navbar sticky-top navbar-expand-lg bg-body-secondary">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">Slack archive</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Menu">
               <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarToggle">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="https://github.com/ronnywang/g0v-slack-archive"><i class="bi bi-github" aria-hidden></i><span class="ms-2 d-md-none">Source Code</span></a>
+                    <a class="nav-link" href="https://github.com/ronnywang/g0v-slack-archive"><i class="bi bi-github" aria-hidden="true"></i><span class="ms-2 d-md-none">Source Code</span></a>
                 </li>
                 <?php if ($this->user) { ?>
                 <li class="nav-item dropdown">
-                    <button class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-check-fill" aria-hidden></i><span class="ms-2 d-md-none">Authenticated</span></button>
+                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false"><i class="bi bi-person-check-fill" aria-hidden="true"></i><span class="ms-2 d-md-none">Authenticated</span></a>
                     <ul class="dropdown-menu">
                         <li><h6 class="dropdown-header">Hi <?= $this->escape($this->user->name) ?>!</h6></li>
                         <li><a class="dropdown-item" href="/index/logout">Logout</a></li>
@@ -57,15 +57,16 @@ _gaq.push(['_trackPageview']);
                 </li>
                 <?php } else { ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="/index/login/"><i class="bi bi-slack me-2" aria-hidden></i>Login with Slack</a>
+                    <a class="nav-link" href="/index/login/"><i class="bi bi-slack me-2" aria-hidden="true"></i>Login with Slack</a>
                 </li>
                 <?php } ?>
             </ul>
             <form class="d-flex" role="search" method="get" action="/index/search">
                 <input class="form-control me-2" type="search" name="q" placeholder="Search">
+                <button type="submit" class="btn btn-light" aria-label="Search"><i class="bi bi-search" aria-hidden="true"></i></button>
             </form>
         </div>
     </div>
-</div>
-<div class="container-fluid">
+</nav>
+<main class="container-fluid">
     <div class="row-fluid">
