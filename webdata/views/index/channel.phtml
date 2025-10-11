@@ -87,13 +87,13 @@ if ($thread_tss) {
         <li class="nav-item">
             <?php if (date('Y', $this->current_date) == $year) { ?>
             <?php $this_month = date('Y-m', $this->current_date) ?>
-            <a class="nav-link active dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" href="/index/channel/<?= $this->channel->id ?>/<?= $this_month ?>"><?= $this_month ?></a>
+            <a class="nav-link active dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" href="/index/channel/<?= $this->channel->id ?>/<?= $this_month ?>" aria-label="<?= $year ?>"><?= $this_month ?></a>
             <?php } else { ?>
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" href="/index/channel/<?= $this->channel->id ?>/<?= array_key_first($month_count) ?>"><?= $year ?></a>
             <?php } ?>
             <ul class="dropdown-menu">
                 <?php foreach ($month_count as $month => $count) { ?>
-                <li><a class="dropdown-item" href="/index/channel/<?= $this->channel->id ?>/<?= $month ?>"><?= $month ?><span class="badge rounded-pill text-primary bg-primary-subtle ms-1"><?= $count ?></span></a></li>
+                <li><a class="dropdown-item" href="/index/channel/<?= $this->channel->id ?>/<?= $month ?>"><?= $month ?><span class="badge rounded-pill text-primary bg-primary-subtle ms-1" aria-label="<?= $count ?> messages"><?= $count ?></span></a></li>
                 <?php } ?>
             </ul>
         </li>
