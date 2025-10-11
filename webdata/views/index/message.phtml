@@ -11,18 +11,25 @@ if (!property_exists($message_data, 'replies') and $this->replies) {
     ksort($message_data->replies);
 }
 
-$style = '';
+$classes = '';
 if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
-    $style = "display:none";
+    $classes = "thread-message";
 }
 ?>
-<div class="message d-flex mb-2" style="<?= $style ?>" id="ts-<?= $this->message->ts?>">
-    <img class="avatar flex-shrink-0 rounded" src="<?= $this->escape($avatar) ?>" width="36" height="36">
+<div class="message d-flex mb-2 <?= $classes ?>" id="ts-<?= $this->message->ts?>">
+    <img class="avatar flex-shrink-0 rounded-3 mt-1" src="<?= $this->escape($avatar) ?>" width="36" height="36">
     <div class="flex-grow-1 ms-2">
         <div class="meta">
             <span class="user-name" title="<?= htmlspecialchars(json_encode($user_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><strong><?= $this->escape(Message::getUserName($message_data->user)) ?></strong></span>
-            <span class="message-time" title="<?= htmlspecialchars(json_encode($message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a href="#ts-<?= $this->message->ts ?>"><?= date('H:i:s', $this->message->ts) ?></a></span>
+            <span class="message-time small" title="<?= htmlspecialchars(json_encode($message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a class="link-secondary link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="#ts-<?= $this->message->ts ?>"><?= date('H:i:s', $this->message->ts) ?></a></span>
         </div>
+
+        <?php if($message_data->subtype == "thread_broadcast" and property_exists($message_data, 'root')) { ?>
+        <div class="thread-root">
+            Replied to a thread: <a class="link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="/index/channel/<?= $this->message->channel_id ?>/<?= date('Y-m', $message_data->thread_ts) ?>#ts-<?= $message_data->thread_ts ?>"><?= date('Y-m-d H:i:s', $message_data->thread_ts) ?></a>
+        </div>
+        <?php } ?>
+
         <div class="contents">
             <?= Message::getHTML($message_data) ?>
         </div>
@@ -113,7 +120,7 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
                 <div class="flex-grow-1 ms-2">
                     <div class="meta">
                         <span class="user-name" title="<?= htmlspecialchars(json_encode($reply_user_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><strong><?= $this->escape(Message::getUserName($reply_message_data->user)) ?></strong></span>
-                        <span class="message-time" title="<?= htmlspecialchars(json_encode($reply_message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a href="#ts-<?= $reply_message->ts ?>"><?= date('Y-m-d H:i:s', $reply_message->ts) ?></a></span>
+                        <span class="message-time small" title="<?= htmlspecialchars(json_encode($reply_message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a class="link-secondary link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="#ts-<?= $reply_message->ts ?>"><?= date('Y-m-d H:i:s', $reply_message->ts) ?></a></span>
                     </div>
                     <div class="contents">
                         <?= Message::getHTML($reply_message_data) ?>
