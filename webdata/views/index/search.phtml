@@ -1,15 +1,17 @@
 <?php
 
-$this->title = "# Search [" . $this->q . "]";
-$this->messages = Message::search('data->>\'text\' LIKE ' . Message::getDb()->quoteWithColumn('data', '%' . $this->q . '%'))->limit(100);
-$channel_ids = array();
-$messages = array();
+$this->title = "# Search [{$this->q}]";
+$this->messages = Message::search('data->>\'text\' LIKE ' . Message::getDb()->quoteWithColumn('data', "%{$this->q}%"))->limit(100);
+
+$channel_ids = [];
+$messages = [];
 foreach ($this->messages as $message) {
     $channel_ids[$message->channel_id] = $message->channel_id;
     $messages[] = $message;
 }
-usort($messages, function($a, $b) { return $b->ts - $a->ts; });
-$channels = array();
+usort($messages, fn($a, $b) => ($b->ts - $a->ts));
+
+$channels = [];
 if ($channel_ids) {
     foreach (Channel::search(1)->searchIn('id', array_keys($channel_ids)) as $channel) {
         $data = json_decode($channel->data);
@@ -17,7 +19,7 @@ if ($channel_ids) {
             if (!$this->user->id) {
                 continue;
             }
-            if (!ChannelUser::search(array('channel_id' => $channel->id, 'user_id' => $this->user->id))->count()) {
+            if (!ChannelUser::search(['channel_id' => $channel->id, 'user_id' => $this->user->id])->count()) {
                 continue;
             }
         }
@@ -50,18 +52,20 @@ if ($channel_ids) {
 }
 </style>
 
-<main class="container my-4">
-<h2>Search: <q class="text-body-secondary small"><?= $this->escape($this->q) ?></q></h2>
-<ol class="list-group my-4" aria-label="Results">
-    <?php foreach ($messages as $message) { ?>
-    <?php if (!array_key_exists($message->channel_id, $channels)) { continue; } ?>
-    <li class="list-group-item list-group-item-action">
-        <div class="d-flex w-100 justify-content-between mb-1">
-            <strong>#<?= $this->escape($channels[$message->channel_id]->name) ?></strong>
-            <a href="/index/channel/<?= $message->channel_id ?>/<?= date('Y-m', $message->ts) ?>#ts-<?= $message->ts ?>" class="link-secondary small stretched-link"><?= date('Y-m-d H:i:s', $message->ts) ?></a>
-        </div>
-        <?= $this->partial('/index/message.phtml', array('message' => $message)) ?>
-    </li>
+<section class="container my-4">
+    <h2>Search: <q class="text-body-secondary small"><?= $this->escape($this->q) ?></q></h2>
+    <ol class="list-group my-4" aria-label="Results">
+    <?php foreach ($messages as $message) {
+        if (!array_key_exists($message->channel_id, $channels)) { continue; } ?>
+        <li class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between mb-1">
+                <strong>#<?= $this->escape($channels[$message->channel_id]->name) ?></strong>
+                <a href="/index/channel/<?= $message->channel_id ?>/<?= date('Y-m', $message->ts) ?>#ts-<?= $message->ts ?>" class="link-secondary small stretched-link"><?= date('Y-m-d H:i:s', $message->ts) ?></a>
+            </div>
+            <?= $this->partial('/index/message.phtml', ['message' => $message]) ?>
+        </li>
     <?php } ?>
-</ol>
+    </ol>
+</section>
+
 <?= $this->partial('common/footer.phtml', $this) ?>

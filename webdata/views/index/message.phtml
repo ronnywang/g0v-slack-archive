@@ -24,32 +24,31 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
             <span class="message-time small" title="<?= htmlspecialchars(json_encode($message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a class="link-secondary link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="#ts-<?= $this->message->ts ?>"><?= date('H:i:s', $this->message->ts) ?></a></span>
         </div>
 
-        <?php if($message_data->subtype == "thread_broadcast" and property_exists($message_data, 'root')) { ?>
+    <?php if($message_data->subtype == "thread_broadcast" and property_exists($message_data, 'root')) { ?>
         <div class="thread-root">
             Replied to a thread: <a class="link-underline link-underline-opacity-0 link-underline-opacity-75-hover" href="/index/channel/<?= $this->message->channel_id ?>/<?= date('Y-m', $message_data->thread_ts) ?>#ts-<?= $message_data->thread_ts ?>"><?= date('Y-m-d H:i:s', $message_data->thread_ts) ?></a>
         </div>
-        <?php } ?>
+    <?php } ?>
 
         <div class="contents">
             <?= Message::getHTML($message_data) ?>
         </div>
 
-        <?php if (property_exists($message_data, 'files')) { ?>
-        <?php foreach ($message_data->files as $file) { ?>
+    <?php if (property_exists($message_data, 'files')) {
+        foreach ($message_data->files as $file) { ?>
         <figure class="figure my-2">
             <img class="attachment-image rounded" src="<?= $this->escape("/index/file?url=" . urlencode($file->thumb_360)) ?>">
             <figcaption class="figure-caption"><?= $this->escape($file->title) ?></figcaption>
         </figure>
-        <?php } ?>
-        <?php } ?>
+    <?php }} ?>
 
-        <?php if (property_exists($message_data, 'attachments')) { ?>
-        <?php foreach ($message_data->attachments as $attachment) { ?>
+    <?php if (property_exists($message_data, 'attachments')) {
+        foreach ($message_data->attachments as $attachment) { ?>
         <blockquote class="card my-2" title="<?= $this->escape(json_encode($attachment, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>">
-            <?php if ($attachment->is_msg_unfurl) { ?>
-            <?php $embed_message = Message::find(array($attachment->channel_id, $attachment->ts)) ?>
-            <?php $embed_message_data = json_decode($embed_message->data) ?>
-            <?php $embed_channel = Channel::find($attachment->channel_id) ?>
+        <?php if ($attachment->is_msg_unfurl) {
+            $embed_message = Message::find([$attachment->channel_id, $attachment->ts]);
+            $embed_message_data = json_decode($embed_message->data);
+            $embed_channel = Channel::find($attachment->channel_id) ?>
             <div class="card-body">
                 <h6 class="card-title">
                     <img class="avatar rounded" src="<?= $this->escape($attachment->author_icon) ?>" width="24" height="24">
@@ -61,16 +60,16 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
                 <ul class="message-meta list-inline my-2 text-secondary small">
                     <li class="list-inline-item">
                         Forwarded from
-                        <?php if ($embed_channel->is_channel) { ?>
+                    <?php if ($embed_channel->is_channel) { ?>
                         <a class="channel text-reset" href="/index/channel/<?= $embed_channel->id ?>">#<?= $this->escape($embed_channel->name) ?></a>
-                        <?php } else { ?>
+                    <?php } else { ?>
                         a private channel
-                        <?php } ?>
+                    <?php } ?>
                     </li>
                     <li class="list-inline-item"><a class="message-time text-reset" href="/index/channel/<?= $attachment->channel_id ?>/<?= date('Y-m', $attachment->ts) ?>#ts-<?= $attachment->ts ?>"><?= date('Y-m-d H:i:s', $attachment->ts) ?></a></li>
                 </ul>
             </div>
-            <?php } else { ?>
+        <?php } else { ?>
             <div class="row g-0">
                 <div class="col">
                     <div class="card-body">
@@ -88,33 +87,29 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
                 </div>
                 <?php if ($attachment->image_url) { ?>
                 <div class="col-md-auto">
-                    <img class="attachment-image img-fluid rounded"  src="<?= $this->escape($attachment->image_url) ?>" width="<?= intval($attachment->image_width) ?>" height="<?= intval($attachment->image_height) ?>">
+                    <img class="attachment-image img-fluid rounded" src="<?= $this->escape($attachment->image_url) ?>" width="<?= intval($attachment->image_width) ?>" height="<?= intval($attachment->image_height) ?>">
                 </div>
                 <?php } ?>
             </div>
-            <?php } ?>
+        <?php } ?>
         </blockquote>
-        <?php } ?>
-        <?php } ?>
+    <?php } ?>
+    <?php } ?>
 
-        <?php if (property_exists($message_data, 'reactions')) { ?>
+    <?php if (property_exists($message_data, 'reactions')) { ?>
         <ul class="reactions list-inline my-1">
-            <?php foreach ($message_data->reactions as $reaction) { ?>
+        <?php foreach ($message_data->reactions as $reaction) { ?>
             <li class="list-inline-item badge rounded-pill text-bg-light"><span class="emoji me-1"><?= Message::getEmoji($reaction->name) ?></span><?= $reaction->count ?></li>
-            <?php } ?>
-        </ul>
         <?php } ?>
+        </ul>
+    <?php } ?>
 
-        <?php if (property_exists($message_data, 'replies')) { ?>
+    <?php if (property_exists($message_data, 'replies')) { ?>
         <div class="replies my-2">
-            <?php foreach ($message_data->replies as $reply) { ?>
-            <?php $reply_message = Message::find(array($this->message->channel_id, $reply->ts)) ?>
-            <?php $reply_message_data = json_decode($reply_message->data) ?>
-            <?php if ($reply_message_data->user) { ?>
-                <?php $reply_user_data = json_decode(User::find($reply_message_data->user)->data) ?>
-            <?php } else { ?>
-                <?php $reply_user_data = new stdClass; ?>
-            <?php } ?>
+        <?php foreach ($message_data->replies as $reply) {
+            $reply_message = Message::find([$this->message->channel_id, $reply->ts]);
+            $reply_message_data = json_decode($reply_message->data);
+            $reply_user_data = $reply_message_data->user ? json_decode(User::find($reply_message_data->user)->data) : new stdClass; ?>
             <div class="message d-flex mb-2" id="ts-<?= $reply_message->ts?>">
                 <img class="avatar flex-shrink-0 rounded" src="<?= $this->escape($reply_user_data->profile->image_72) ?>" width="24" height="24">
                 <div class="flex-grow-1 ms-2">
@@ -127,9 +122,9 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
                     </div>
                 </div>
             </div>
-            <?php } ?>
-        </div>
         <?php } ?>
+        </div>
+    <?php } ?>
 
     </div>
 </div>

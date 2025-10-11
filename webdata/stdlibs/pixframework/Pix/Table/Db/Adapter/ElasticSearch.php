@@ -2,7 +2,7 @@
 
 /**
  * Pix_Table_Db_Adapter_ElasticSearch
- * 
+ *
  * @package Table
  * @copyright 2003-2012 PIXNET Digital Media Corporation
  * @license http://framework.pixnet.net/license BSD License
@@ -40,7 +40,6 @@ class Pix_Table_Db_Adapter_ElasticSearch extends Pix_Table_Db_Adapter_Abstract
      */
     public function insertOne($table, $keys_values)
     {
-        $this->http(
         $db = $this->_getDb();
         $items = array();
         $excepted = array();

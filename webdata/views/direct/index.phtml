@@ -1,19 +1,19 @@
 <?php
-$channel_ids = DirectChannelUser::search(array('user_id' => $this->user->id))->toArray('channel_id');
+$channel_ids = DirectChannelUser::search(['user_id' => $this->user->id])->toArray('channel_id');
+
 $sql = "SELECT channel_id, count(*), max(ts) FROM direct_message WHERE channel_id IN ('" . implode('\',\'', $channel_ids) . "') GROUP BY channel_id";
 $res = Message::getDb()->query($sql);
-$channel_count = array();
+$channel_count = [];
 while ($row = $res->fetch_array()) {
-    $channel_count[$row[0]] = array($row[1], $row[2]);
+    $channel_count[$row[0]] = [$row[1], $row[2]];
 }
 
-$channels = array();
+$channels = [];
 foreach (DirectChannel::search(1)->searchIn('id', $channel_ids)  as $channel) {
     $channels[] = $channel;
 }
-usort($channels, function($a, $b) use ($channel_count) {
-    return $channel_count[$b->id][1] - $channel_count[$a->id][1];
-});
+usort($channels, fn($a, $b) => ($channel_count[$b->id][1] - $channel_count[$a->id][1]));
+
 $duser = DirectUser::find($this->user->id);
 $data = json_decode($duser->data);
 ?>
@@ -58,11 +58,11 @@ $data = json_decode($duser->data);
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($channels as $channel) { ?>
-        <?php $data = json_decode($channel->data) ?>
+    <?php foreach ($channels as $channel) {
+        $data = json_decode($channel->data) ?>
         <tr>
             <th scope="row">
-                <a class="channel" href="/direct/channel/<?= $channel->id ?>" title="<?= $this->escape(($channel->data)) ?>"><?= $channel->getName($this->user) ?></a>
+                <a class="channel" href="/direct/channel/<?= $channel->id ?>" title="<?= $this->escape($channel->data) ?>"><?= $channel->getName($this->user) ?></a>
             </th>
             <td><?= date('Y/m/d H:i:s', $data->created) ?></td>
             <td class="text-end"><?= $channel_count[$channel->id][0] ?></td>
@@ -81,7 +81,7 @@ $data = json_decode($duser->data);
                 <?php } ?>
             </td>
         </tr>
-        <?php } ?>
+    <?php } ?>
     </tbody>
 </table>
 </section>
@@ -98,5 +98,4 @@ if (document.location.href.match(/autonext=1/)) {
     $('#update-all').click();
 }
 </script>
-
 <?= $this->partial('common/footer.phtml', $this) ?>

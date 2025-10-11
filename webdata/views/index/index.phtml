@@ -1,21 +1,16 @@
 <?php
 $sql = "SELECT channel_id, count(*), max(ts) FROM message GROUP BY channel_id";
 $res = Message::getDb()->query($sql);
-$channel_count = array();
+$channel_count = [];
 while ($row = $res->fetch_array()) {
-    $channel_count[$row[0]] = array($row[1], $row[2]);
+    $channel_count[$row[0]] = [$row[1], $row[2]];
 }
-$channels = array();
-foreach (Channel::search(1)  as $channel) {
+
+$channels = [];
+foreach (Channel::search(1) as $channel) {
     $channels[] = $channel;
 }
-usort($channels, function($a, $b) {
-    $dataa = json_decode($a->data);
-    $datab = json_decode($b->data);
-
-    return $datab->num_members - $dataa->num_members;
-
-});
+usort($channels, fn($a, $b) => (json_decode($b->data)->num_members - json_decode($a->data)->num_members));
 ?>
 <?= $this->partial('common/header.phtml', $this) ?>
 
@@ -54,28 +49,22 @@ usort($channels, function($a, $b) {
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($this->private_channel as $private_channel) { ?>
-        <?php if (!$channel = Channel::find($private_channel)) { continue; } ?>
-        <?php $data = json_decode($channel->data) ?>
+    <?php foreach ($this->private_channel as $private_channel) {
+        if (!$channel = Channel::find($private_channel)) { continue; }
+        $data = json_decode($channel->data);
+        $private_config = json_decode($channel->private_config); ?>
         <tr>
             <th scope="row">
-                <a class="channel" href="/index/channel/<?= $channel->id ?>" title="<?= $this->escape(($channel->data)) ?>"><i class="bi bi-lock-fill me-1" aria-hidden="true"></i><?= $channel->name ?></a>
+                <a class="channel" href="/index/channel/<?= $channel->id ?>" title="<?= $this->escape($channel->data) ?>"><i class="bi bi-lock-fill me-1" aria-hidden="true"></i><?= $this->escape($channel->name) ?></a>
             </th>
             <td class="message"><?= Message::getHTML($data->topic->value) ?></td>
             <td class="message"><?= Message::getHTML($data->purpose->value) ?></td>
-            <td><?= date('Y/m/d H:i:s', $data->created) ?> </td>
-        <?php $private_config = json_decode($channel->private_config) ?>
+            <td><?= date('Y/m/d H:i:s', $data->created) ?></td>
         <?php if (property_exists($private_config, 'access_token')) { ?>
             <td class="text-end"><?= $channel_count[$channel->id][0] ?></td>
             <td class="text-end"><?= $data->num_members ?></td>
             <td><?= date('Y/m/d H:i:s', $channel_count[$channel->id][1])?></td>
-            <td>
-                <?php if ($channel->last_fetched_at) { ?>
-                    <?= date('Y/m/d H:i:s', $channel->last_fetched_at) ?>
-                <?php } else { ?>
-                    not yet
-                <?php } ?>
-            </td>
+            <td><?= $channel->last_fetched_at ? date('Y/m/d H:i:s', $channel->last_fetched_at) : 'not yet' ?></td>
             <td>
                 <form method="post" action="/index/addprivatechannel?channel=<?= urlencode($channel->id) ?>">
                     <button class="btn btn-outline-secondary btn-sm" type="submit" title="手動同步"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i></button>
@@ -90,7 +79,7 @@ usort($channels, function($a, $b) {
             </td>
         <?php } ?>
         </tr>
-        <?php } ?>
+    <?php } ?>
     </tbody>
 </table>
 </section>
@@ -114,12 +103,12 @@ usort($channels, function($a, $b) {
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($channels as $channel) { ?>
-        <?php $data = json_decode($channel->data) ?>
-        <?php if (property_exists($data, 'is_private') and $data->is_private) { continue; } ?>
+    <?php foreach ($channels as $channel) {
+        $data = json_decode($channel->data);
+        if (property_exists($data, 'is_private') and $data->is_private) { continue; } ?>
         <tr>
             <th scope="row">
-                <a class="channel" href="/index/channel/<?= $channel->id ?>" title="<?= $this->escape(($channel->data)) ?>">#<?= $channel->name ?></a>
+                <a class="channel" href="/index/channel/<?= $channel->id ?>" title="<?= $this->escape($channel->data) ?>">#<?= $this->escape($channel->name) ?></a>
             </th>
             <td class="message"><?= Message::getHTML($data->topic->value) ?></td>
             <td class="message"><?= Message::getHTML($data->purpose->value) ?></td>
@@ -127,15 +116,9 @@ usort($channels, function($a, $b) {
             <td class="text-end"><?= $channel_count[$channel->id][0] ?></td>
             <td class="text-end"><?= $data->num_members ?></td>
             <td><?= date('Y/m/d H:i:s', $channel_count[$channel->id][1])?></td>
-            <td>
-                <?php if ($channel->last_fetched_at) { ?>
-                    <?= date('Y/m/d H:i:s', $channel->last_fetched_at) ?>
-                <?php } else { ?>
-                    not yet
-                <?php } ?>
-            </td>
+            <td><?= $channel->last_fetched_at ? date('Y/m/d H:i:s', $channel->last_fetched_at) : 'not yet' ?></td>
         </tr>
-        <?php } ?>
+    <?php } ?>
     </tbody>
 </table>
 </section>

@@ -1,22 +1,22 @@
 <?php
 
 $this->title = $this->channel->getName($this->user);
-$this->messages = DirectMessage::search(array('channel_id' => $this->channel->id));
+$this->messages = DirectMessage::search(['channel_id' => $this->channel->id]);
 
 $timezoom_offset = date('Z');
 $sql = "SELECT FLOOR((ts + {$timezoom_offset}) / 86400), COUNT(*) FROM direct_message WHERE channel_id = '{$this->channel->id}' GROUP BY FLOOR((ts + {$timezoom_offset}) / 86400)";
 $res = DirectMessage::getDb()->query($sql);
 
-$year_month_count = array();
+$year_month_count = [];
 while ($row = $res->fetch_array()) {
-    list($t, $count) = $row;
+    [$t, $count] = $row;
     $t = $t * 86400 + $timezoom_offset;
 
     $year = date('Y', $t);
     $month = date('Y-m', $t);
 
     if (!array_key_exists($year, $year_month_count)) {
-        $year_month_count[$year] = array();
+        $year_month_count[$year] = [];
     }
 
     if (!array_key_exists($month, $year_month_count[$year])) {
@@ -38,15 +38,15 @@ if ($this->next_date) {
 }
 $thread_tss = $this->messages->search($range_term)->toArray('ts');
 if ($thread_tss) {
-    $reply_threads = DirectMessage::search(array('channel_id' => $this->channel->id))->search("(data->>'thread_ts')::NUMERIC IN (" . implode(',', $thread_tss) . ")");
-    $reply_messages = array();
+    $reply_threads = DirectMessage::search(['channel_id' => $this->channel->id])->search("(data->>'thread_ts')::NUMERIC IN (" . implode(',', $thread_tss) . ")");
+    $reply_messages = [];
     foreach ($reply_threads as $reply) {
         $data = json_decode($reply->data);
         if ($data->thread_ts == $reply->ts) {
             continue;
         }
         if (!array_key_exists($data->thread_ts, $reply_messages)) {
-            $reply_messages[$data->thread_ts] = array();
+            $reply_messages[$data->thread_ts] = [];
         }
         $reply_messages[floatval($data->thread_ts)][$reply->ts] = $reply;
     }
@@ -87,32 +87,34 @@ if ($thread_tss) {
 
 <nav role="pagination">
     <ul class="nav nav-tabs">
-        <?php foreach ($year_month_count as $year => $month_count) { ?>
+    <?php foreach ($year_month_count as $year => $month_count) { ?>
         <li class="nav-item">
-            <?php if (date('Y', $this->current_date) == $year) { ?>
-            <?php $this_month = date('Y-m', $this->current_date) ?>
+        <?php if (date('Y', $this->current_date) == $year) {
+            $this_month = date('Y-m', $this->current_date) ?>
             <a class="nav-link active dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" href="/direct/channel/<?= $this->channel->id ?>/<?= $this_month ?>" aria-label="<?= $year ?>"><?= $this_month ?></a>
-            <?php } else { ?>
+        <?php } else { ?>
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" href="/direct/channel/<?= $this->channel->id ?>/<?= array_key_first($month_count) ?>"><?= $year ?></a>
-            <?php } ?>
+        <?php } ?>
             <ul class="dropdown-menu">
-                <?php foreach ($month_count as $month => $count) { ?>
+            <?php foreach ($month_count as $month => $count) { ?>
                 <li><a class="dropdown-item" href="/direct/channel/<?= $this->channel->id ?>/<?= $month ?>"><?= $month ?><span class="badge rounded-pill text-primary bg-primary-subtle ms-1" aria-label="<?= $count ?> messages"><?= $count ?></span></a></li>
-                <?php } ?>
+            <?php } ?>
             </ul>
         </li>
+    <?php } ?>
     </ul>
 </nav>
 
 <section role="feed">
-    <?php $current_date = null; ?>
-    <?php foreach ($this->messages->search($range_term)->order('ts ASC') as $message) { ?>
-    <?php if (is_null($current_date) or date('Y-m-d', $message->ts) != $current_date) { ?>
-        <?php $current_date = date('Y-m-d', $message->ts) ?>
+<?php
+$current_date = null;
+foreach ($this->messages->search($range_term)->order('ts ASC') as $message) {
+    if ($current_date === null or date('Y-m-d', $message->ts) != $current_date) {
+        $current_date = date('Y-m-d', $message->ts); ?>
         <h5 class="my-3"><?= $current_date ?></h5>
     <?php } ?>
-    <?= $this->partial('/index/message.phtml', array('message' => $message, 'replies' => $reply_messages[floatval($message->ts)])) ?>
-    <?php } ?>
+    <?= $this->partial('/index/message.phtml', ['message' => $message, 'replies' => $reply_messages[floatval($message->ts)]]) ?>
+<?php } ?>
 </section>
 
 </div>
