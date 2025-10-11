@@ -41,6 +41,31 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
         <?php if (property_exists($message_data, 'attachments')) { ?>
         <?php foreach ($message_data->attachments as $attachment) { ?>
         <blockquote class="card my-2" title="<?= $this->escape(json_encode($attachment, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>">
+            <?php if ($attachment->is_msg_unfurl) { ?>
+            <?php $embed_message = Message::find(array($attachment->channel_id, $attachment->ts)) ?>
+            <?php $embed_message_data = json_decode($embed_message->data) ?>
+            <?php $embed_channel = Channel::find($attachment->channel_id) ?>
+            <div class="card-body">
+                <h6 class="card-title">
+                    <img class="avatar rounded" src="<?= $attachment->escape($attachment->author_icon) ?>" width="24" height="24">
+                    <span class="user-name"><strong><?= $attachment->escape($attachment->author_name) ?></strong></span>
+                </h6>
+                <div class="card-text">
+                    <?= Message::getHTML($embed_message_data) ?>
+                </div>
+                <ul class="message-meta list-inline my-2 text-secondary small">
+                    <li class="list-inline-item">
+                        Forwarded from
+                        <?php if ($embed_channel->is_channel) { ?>
+                        <a class="channel text-reset" href="/index/channel/<?= $embed_channel->id ?>">#<?= $embed_channel->name ?></a>
+                        <?php } else { ?>
+                        a private channel
+                        <?php } ?>
+                    </li>
+                    <li class="list-inline-item"><a class="message-time text-reset" href="/index/channel/<?= $attachment->channel_id ?>/<?= date('Y-m', $attachment->ts) ?>#ts-<?= $attachment->ts ?>"><?= date('Y-m-d H:i:s', $attachment->ts) ?></a></li>
+                </ul>
+            </div>
+            <?php } else { ?>
             <div class="row g-0">
                 <div class="col">
                     <div class="card-body">
@@ -62,6 +87,7 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
                 </div>
                 <?php } ?>
             </div>
+            <?php } ?>
         </blockquote>
         <?php } ?>
         <?php } ?>
@@ -69,7 +95,7 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
         <?php if (property_exists($message_data, 'reactions')) { ?>
         <ul class="reactions list-inline my-1">
             <?php foreach ($message_data->reactions as $reaction) { ?>
-            <li class="list-inline-item badge rounded-pill text-bg-light"><?= Message::getEmoji($reaction->name) ?> <?= $reaction->count ?></li>
+            <li class="list-inline-item badge rounded-pill text-bg-light"><span class="emoji me-1"><?= Message::getEmoji($reaction->name) ?></span><?= $reaction->count ?></li>
             <?php } ?>
         </ul>
         <?php } ?>
