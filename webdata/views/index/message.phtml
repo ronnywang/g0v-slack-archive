@@ -6,7 +6,7 @@ if ($message_data->user and $user = User::find($message_data->user)) {
 } else {
     $avatar = 'https://ca.slack-edge.com/T02G2SXKM-UD94JT3KQ-g8c100274e62-48';
 }
-if (!property_exists($message_data, 'replies') and $this->replies) { 
+if (!property_exists($message_data, 'replies') and $this->replies) {
     $message_data->replies = $this->replies;
     ksort($message_data->replies);
 }
@@ -16,74 +16,91 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
     $style = "display:none";
 }
 ?>
-<div class="message" style="<?= $style ?>" id="ts-<?= $this->message->ts?>">
-    <div class="avatar">
-        <img src="<?= $this->escape($avatar) ?>" width="36" height="36">
+<div class="message d-flex mb-2" style="<?= $style ?>" id="ts-<?= $this->message->ts?>">
+    <div class="avatar flex-shrink-0">
+        <img class="rounded" src="<?= $this->escape($avatar) ?>" width="36" height="36">
     </div>
-    <div class="content">
-        <div>
+    <div class="flex-grow-1 ms-2">
+        <div class="meta">
             <span class="user-name" title="<?= htmlspecialchars(json_encode($user_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><strong><?= $this->escape(Message::getUserName($message_data->user)) ?></strong></span>
             <span class="message-time" title="<?= htmlspecialchars(json_encode($message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a href="#ts-<?= $this->message->ts ?>"><?= date('H:i:s', $this->message->ts) ?></a></span>
         </div>
-        <div><?= Message::getHTML($message_data) ?></div>
+        <div class="contents">
+            <?= Message::getHTML($message_data) ?>
+        </div>
 
         <?php if (property_exists($message_data, 'files')) { ?>
         <?php foreach ($message_data->files as $file) { ?>
-        <h5><?= $this->escape($file->title) ?></h5>
-        <img src="<?= $this->escape("/index/file?url=" . urlencode($file->thumb_360)) ?>">
+        <figure class="figure my-2">
+            <img class="attachment-image rounded" src="<?= $this->escape("/index/file?url=" . urlencode($file->thumb_360)) ?>">
+            <figcaption class="figure-caption"><?= $this->escape($file->title) ?></figcaption>
+        </figure>
         <?php } ?>
         <?php } ?>
 
         <?php if (property_exists($message_data, 'attachments')) { ?>
         <?php foreach ($message_data->attachments as $attachment) { ?>
-        <blockquote title="<?= $this->escape(json_encode($attachment, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>">
-            <p>
-            <?php if ($attachment->service_icon) { ?>
-            <img src="<?= $this->escape($attachment->service_icon) ?>" width="16" height="16">
-            <?php } ?>
-            <?= $this->escape($attachment->service_name) ?>
-            </p>
-            <p><a href="<?= $this->escape($attachment->title_link) ?>"><?= $this->escape($attachment->title) ?></a></p>
-            <p><?= $this->escape($attachment->text) ?></p>
-            <?php if ($attachment->image_url) { ?>
-            <img src="<?= $this->escape($attachment->image_url) ?>" width="<?= intval($attachment->image_width) ?>" height="<?= intval($attachment->image_height) ?>">
-            <?php } ?>
+        <blockquote class="card my-2" title="<?= $this->escape(json_encode($attachment, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>">
+            <div class="row g-0">
+                <div class="col">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <?php if ($attachment->service_icon) { ?>
+                            <img class="icon" src="<?= $this->escape($attachment->service_icon) ?>" width="16" height="16">
+                            <?php } ?>
+                            <?= $this->escape($attachment->service_name) ?>
+                        </h6>
+                        <div class="card-subtitle"><a href="<?= $this->escape($attachment->title_link) ?>"><?= $this->escape($attachment->title) ?></a></div>
+                        <div class="card-text">
+                            <?= $this->escape($attachment->text) ?>
+                        </div>
+                    </div>
+                </div>
+                <?php if ($attachment->image_url) { ?>
+                <div class="col-md-auto">
+                    <img class="attachment-image img-fluid rounded"  src="<?= $this->escape($attachment->image_url) ?>" width="<?= intval($attachment->image_width) ?>" height="<?= intval($attachment->image_height) ?>">
+                </div>
+                <?php } ?>
+            </div>
         </blockquote>
         <?php } ?>
         <?php } ?>
 
-        <?php if (property_exists($message_data, 'replies')) { ?>
-        <?php foreach ($message_data->replies as $reply) { ?>
-        <?php $reply_message = Message::find(array($this->message->channel_id, $reply->ts)) ?>
-        <?php $reply_message_data = json_decode($reply_message->data) ?>
-
-        <?php if ($reply_message_data->user) { ?>
-        <?php $reply_user_data = json_decode(User::find($reply_message_data->user)->data) ?>
-        <?php } else { ?>
-        <?php $reply_user_data = new stdClass; ?>
-        <?php } ?>
-        <div style="padding-top: 5px">
-            <div class="avatar" width="30px">
-                <img src="<?= $this->escape($reply_user_data->profile->image_72) ?>" width="24" height="24">
-            </div>
-            <div class="content">
-                <div>
-                    <span class="user-name" title="<?= htmlspecialchars(json_encode($reply_user_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><strong><?= $this->escape(Message::getUserName($reply_message_data->user)) ?></strong></span>
-                    <span class="message-time" title="<?= htmlspecialchars(json_encode($reply_message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a href="#ts-<?= $reply_message->ts ?>"><?= date('Y-m-d H:i:s', $reply_message->ts) ?></a></span>
-                </div>
-                <div><?= Message::getHTML($reply_message_data) ?></div>
-            </div>
-            <div style="clear: both"></div>
-        </div>
-        <?php } ?>
-        <?php } ?>
-
         <?php if (property_exists($message_data, 'reactions')) { ?>
-        <div>
+        <ul class="reactions list-inline my-1">
             <?php foreach ($message_data->reactions as $reaction) { ?>
-            <span class="badge"><?= Message::getEmoji($reaction->name) ?> <?= $reaction->count ?></span>
+            <li class="list-inline-item badge rounded-pill text-bg-light"><?= Message::getEmoji($reaction->name) ?> <?= $reaction->count ?></li>
+            <?php } ?>
+        </ul>
+        <?php } ?>
+
+        <?php if (property_exists($message_data, 'replies')) { ?>
+        <div class="replies my-2">
+            <?php foreach ($message_data->replies as $reply) { ?>
+            <?php $reply_message = Message::find(array($this->message->channel_id, $reply->ts)) ?>
+            <?php $reply_message_data = json_decode($reply_message->data) ?>
+            <?php if ($reply_message_data->user) { ?>
+                <?php $reply_user_data = json_decode(User::find($reply_message_data->user)->data) ?>
+            <?php } else { ?>
+                <?php $reply_user_data = new stdClass; ?>
+            <?php } ?>
+            <div class="message d-flex mb-2" id="ts-<?= $reply_message->ts?>">
+                <div class="avatar flex-shrink-0">
+                    <img src="<?= $this->escape($reply_user_data->profile->image_72) ?>" width="24" height="24">
+                </div>
+                <div class="flex-grow-1 ms-2">
+                    <div class="meta">
+                        <span class="user-name" title="<?= htmlspecialchars(json_encode($reply_user_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><strong><?= $this->escape(Message::getUserName($reply_message_data->user)) ?></strong></span>
+                        <span class="message-time" title="<?= htmlspecialchars(json_encode($reply_message_data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)) ?>"><a href="#ts-<?= $reply_message->ts ?>"><?= date('Y-m-d H:i:s', $reply_message->ts) ?></a></span>
+                    </div>
+                    <div class="contents">
+                        <?= Message::getHTML($reply_message_data) ?>
+                    </div>
+                </div>
+            </div>
             <?php } ?>
         </div>
         <?php } ?>
+
     </div>
 </div>

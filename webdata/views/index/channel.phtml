@@ -40,25 +40,31 @@ if ($thread_tss) {
 }
 ?>
 <?= $this->partial('common/header.phtml', $this) ?>
+
 <style>
-.message .avatar {
-    float: left;
-    padding-right: 5px;
+.emoji {
+    font-size: 16px;
+    vertical-align: middle;
 }
 
-.message .content {
-    overflow: hidden;
-    padding-bottom: 10px;
+.attachment-image {
+    aspect-ratio: auto;
 }
 
-.message {
-    clear: both;
+@media screen and (min-width: 48rem) {
+    .attachment-image {
+        max-width: 24rem;
+        max-height: 24rem;
+    }
 }
 </style>
-<h1><?= $this->escape($this->channel->name) ?></h1>
-<h3>Month: <?= date('Y-m', $this->current_date) ?></h3>
-<div class="pagination">
-    <ul>
+
+<div class="container my-4">
+
+<h2><?php if ($this->channel->is_channel) { ?>#<?php } elseif ($this->channel->is_group) { ?><i class="bi bi-lock-fill me-1" aria-hidden="true"></i><?php } ?><?= $this->escape($this->channel->name) ?></h2>
+
+<nav>
+    <ul class="pagination">
     <?php foreach ($month_count as $month => $count) { ?>
     <li <?= (date('Y-m', $this->current_date) == $month) ? ' class="active"': ''?>>
     <a href="/index/channel/<?= $this->channel->id ?>/<?= $month ?>"><?= $month ?>
@@ -66,16 +72,18 @@ if ($thread_tss) {
     </a>
     </li>
     <?php } ?>
-</ul>
-</div>
-<?php $current_date = null; ?>
-<?php foreach ($this->messages->search($range_term)->order('ts ASC') as $message) { ?>
-<?php if (is_null($current_date) or date('Y-m-d', $message->ts) != $current_date) { ?>
-<?php $current_date = date('Y-m-d', $message->ts) ?>
-<h4><?= $current_date ?></h4>
-<?php } ?>
-<?= $this->partial('/index/message.phtml', array('message' => $message, 'replies' => $reply_messages[floatval($message->ts)])) ?>
-<div style="clear:both"></div>
-<?php } ?>
-<?= $this->partial('common/footer.phtml', $this) ?>
+    </ul>
+</nav>
 
+<section role="feed">
+    <?php $current_date = null; ?>
+    <?php foreach ($this->messages->search($range_term)->order('ts ASC') as $message) { ?>
+    <?php if (is_null($current_date) or date('Y-m-d', $message->ts) != $current_date) { ?>
+        <?php $current_date = date('Y-m-d', $message->ts) ?>
+        <h5 class="my-3"><?= $current_date ?></h5>
+    <?php } ?>
+    <?= $this->partial('/index/message.phtml', array('message' => $message, 'replies' => $reply_messages[floatval($message->ts)])) ?>
+    <?php } ?>
+</section>
+
+<?= $this->partial('common/footer.phtml', $this) ?>
