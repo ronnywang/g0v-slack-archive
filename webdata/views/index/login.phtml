@@ -1,33 +1,47 @@
 <?= $this->partial('/common/header.phtml', $this) ?>
-請選擇您為什麼要登入：
-<ul>
-    <li>
-    我想要協助備份非公開頻道記錄
-    <ul>
-        <li>會需要您提供可以離線瀏覽頻道的權限</li>
-        <li><a href="/index/login?type=backup"><button>登入</button></a></li>
-    </ul>
-    </li>
-    <li>我想要瀏覽非公開頻道記錄
-    <ul>
-        <li>只需要驗證您的身份，不需要您提供權限</li>
-        <li><a href="/index/login?type=read"><button>登入</button></a></li>
-    </ul>
-    </li>
-    <li>
-    我想要備份我個人的私密訊息
-    <ul>
-        <li>會需要您提供可以離線瀏覽私訊的權限(im.read)</li>
-        <li><a href="/index/login?type=im"><button>登入</button></a></li>
-    </ul>
-    </li>
-    <li>
-    我想要瀏覽公開頻道記錄
-    <ul>
-        <li>
-        不需要登入即可使用
-        </li>
-    </ul>
-    </li>
-</ul>
+<section class="container">
+    <h2 class="my-4 py-4 text-center">請選擇您為什麼要登入</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-img-top text-center display-2 pt-2 pb-4 text-primary"><i class="bi bi-cloud-download me-2" aria-hidden="true"></i></div>
+                    <h4 class="card-title">我想要協助備份非公開頻道記錄</h4>
+                    <p class="card-text">會需要您提供可以離線瀏覽頻道的權限。</p>
+                    <a class="btn btn-primary" href="/index/login?type=backup"><i class="bi bi-slack me-1" aria-hidden="true"></i>登入</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-img-top text-center display-2 pt-2 pb-4 text-primary"><i class="bi bi-database me-2" aria-hidden="true"></i></div>
+                    <h4 class="card-title">我想要瀏覽非公開頻道記錄</h4>
+                    <p class="card-text">只需要驗證您的身分，不需要您提供權限。</p>
+                    <a class="btn btn-primary" href="/index/login?type=read"><i class="bi bi-slack me-1" aria-hidden="true"></i>登入</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-img-top text-center display-2 pt-2 pb-4 text-primary"><i class="bi bi-person-lock me-2" aria-hidden="true"></i></div>
+                    <h4 class="card-title">我想要備份我個人的私密訊息</h4>
+                    <p class="card-text">會需要您提供可以離線瀏覽私訊的權限（<code>im.read</code>）。</p>
+                    <a class="btn btn-primary" href="/index/login?type=im"><i class="bi bi-slack me-1" aria-hidden="true"></i>登入</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-img-top text-center display-2 pt-2 pb-4 text-primary"><i class="bi bi-hash me-2" aria-hidden="true"></i></div>
+                    <h4 class="card-title">我想要瀏覽公開頻道記錄</h4>
+                    <p class="card-text">不需要登入即可使用。</p>
+                    <a class="btn btn-light" href="/"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>回到首頁</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 <?= $this->partial('/common/footer.phtml', $this) ?>
