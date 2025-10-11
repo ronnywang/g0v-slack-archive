@@ -6,17 +6,30 @@ $this->messages = Message::search(array('channel_id' => $this->channel->id));
 $timezoom_offset = date('Z');
 $sql = "SELECT FLOOR((ts + {$timezoom_offset}) / 86400), COUNT(*) FROM message WHERE channel_id = '{$this->channel->id}' GROUP BY FLOOR((ts + {$timezoom_offset}) / 86400)";
 $res = Message::getDb()->query($sql);
-$month_count = array();
+
+$year_month_count = array();
 while ($row = $res->fetch_array()) {
     list($t, $count) = $row;
     $t = $t * 86400 + $timezoom_offset;
+
+    $year = date('Y', $t);
     $month = date('Y-m', $t);
-    if (!array_key_exists($month, $month_count)) {
-        $month_count[$month] = 0;
+
+    if (!array_key_exists($year, $year_month_count)) {
+        $year_month_count[$year] = array();
     }
-    $month_count[$month] += $count;
+
+    if (!array_key_exists($month, $year_month_count[$year])) {
+        $year_month_count[$year][$month] = 0;
+    }
+
+    $year_month_count[$year][$month] += $count;
 }
-ksort($month_count);
+
+ksort($year_month_count);
+foreach ($year_month_count as $year => &$month_count) {
+    ksort($month_count);
+}
 
 if ($this->next_date) {
     $range_term = "ts >= {$this->current_date} AND ts < {$this->next_date}";
@@ -68,15 +81,22 @@ if ($thread_tss) {
 
 <h2><?php if ($this->channel->is_channel) { ?>#<?php } elseif ($this->channel->is_group) { ?><i class="bi bi-lock-fill me-1" aria-hidden="true"></i><?php } ?><?= $this->escape($this->channel->name) ?></h2>
 
-<nav>
-    <ul class="pagination">
-    <?php foreach ($month_count as $month => $count) { ?>
-    <li <?= (date('Y-m', $this->current_date) == $month) ? ' class="active"': ''?>>
-    <a href="/index/channel/<?= $this->channel->id ?>/<?= $month ?>"><?= $month ?>
-        (<?= $count ?>)
-    </a>
-    </li>
-    <?php } ?>
+<nav role="pagination">
+    <ul class="nav nav-tabs">
+        <?php foreach ($year_month_count as $year => $month_count) { ?>
+        <li class="nav-item">
+            <?php if (date('Y', $this->current_date) == $year) { ?>
+            <?php $this_month = date('Y-m', $this->current_date) ?>
+            <a class="nav-link active dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" href="/index/channel/<?= $this->channel->id ?>/<?= $this_month ?>"><?= $this_month ?></a>
+            <?php } else { ?>
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" href="/index/channel/<?= $this->channel->id ?>/<?= array_key_first($month_count) ?>"><?= $year ?></a>
+            <?php } ?>
+            <ul class="dropdown-menu">
+                <?php foreach ($month_count as $month => $count) { ?>
+                <li><a class="dropdown-item" href="/index/channel/<?= $this->channel->id ?>/<?= $month ?>"><?= $month ?><span class="badge rounded-pill text-primary bg-primary-subtle ms-1"><?= $count ?></span></a></li>
+                <?php } ?>
+            </ul>
+        </li>
     </ul>
 </nav>
 
