@@ -45,8 +45,8 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
             <?php $embed_channel = Channel::find($attachment->channel_id) ?>
             <div class="card-body">
                 <h6 class="card-title">
-                    <img class="avatar rounded" src="<?= $attachment->escape($attachment->author_icon) ?>" width="24" height="24">
-                    <span class="user-name"><strong><?= $attachment->escape($attachment->author_name) ?></strong></span>
+                    <img class="avatar rounded" src="<?= $this->escape($attachment->author_icon) ?>" width="24" height="24">
+                    <span class="user-name"><strong><?= $this->escape($attachment->author_name) ?></strong></span>
                 </h6>
                 <div class="card-text">
                     <?= Message::getHTML($embed_message_data) ?>
@@ -55,7 +55,7 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
                     <li class="list-inline-item">
                         Forwarded from
                         <?php if ($embed_channel->is_channel) { ?>
-                        <a class="channel text-reset" href="/index/channel/<?= $embed_channel->id ?>">#<?= $embed_channel->name ?></a>
+                        <a class="channel text-reset" href="/index/channel/<?= $embed_channel->id ?>">#<?= $this->escape($embed_channel->name) ?></a>
                         <?php } else { ?>
                         a private channel
                         <?php } ?>

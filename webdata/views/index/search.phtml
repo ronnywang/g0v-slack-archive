@@ -28,25 +28,40 @@ if ($channel_ids) {
 ?>
 <?= $this->partial('common/header.phtml', $this) ?>
 <style>
-.message .avatar {
-    float: left;
-    padding-right: 5px;
+.badge .emoji {
+    font-size: 16px;
 }
 
-.message .content {
-    overflow: hidden;
-    padding-bottom: 10px;
+.badge .emoji > img {
+    aspect-ratio: auto;
+    max-width: 16px;
+    max-height: 16px;
 }
 
-.message {
-    clear: both;
+.attachment-image {
+    aspect-ratio: auto;
+}
+
+@media screen and (min-width: 48rem) {
+    .attachment-image {
+        max-width: 24rem;
+        max-height: 24rem;
+    }
 }
 </style>
-<?php foreach ($messages as $message) { ?>
-<?php if (!array_key_exists($message->channel_id, $channels)) { continue; } ?>
-<h3><a href="/index/channel/<?= $message->channel_id ?>/<?= date('Y-m', $message->ts) ?>#ts-<?= $message->ts ?>">#<?= $this->escape($channels[$message->channel_id]->name) ?>. <?= date('Y-m-d H:i:s', $message->ts) ?></a></h3></h3>
-<?= $this->partial('/index/message.phtml', array('message' => $message)) ?>
-<?php } ?>
-<div style="clear:both"></div>
-<?= $this->partial('common/footer.phtml', $this) ?>
 
+<main class="container my-4">
+<h2>Search: <q class="text-body-secondary small"><?= $this->escape($this->q) ?></q></h2>
+<ol class="list-group my-4" aria-label="Results">
+    <?php foreach ($messages as $message) { ?>
+    <?php if (!array_key_exists($message->channel_id, $channels)) { continue; } ?>
+    <li class="list-group-item list-group-item-action">
+        <div class="d-flex w-100 justify-content-between mb-1">
+            <strong>#<?= $this->escape($channels[$message->channel_id]->name) ?></strong>
+            <a href="/index/channel/<?= $message->channel_id ?>/<?= date('Y-m', $message->ts) ?>#ts-<?= $message->ts ?>" class="link-secondary small stretched-link"><?= date('Y-m-d H:i:s', $message->ts) ?></a>
+        </div>
+        <?= $this->partial('/index/message.phtml', array('message' => $message)) ?>
+    </li>
+    <?php } ?>
+</ol>
+<?= $this->partial('common/footer.phtml', $this) ?>
