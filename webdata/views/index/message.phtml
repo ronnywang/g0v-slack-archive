@@ -1,7 +1,7 @@
 <?php
 $message_data = json_decode($this->message->data);
-if ($message_data->user and $user = User::find($message_data->user)) {
-    $user_data = json_decode($user->data);
+$user_data = null;
+if ($message_data->user and $user_data = $this->message_users[$message_data->user]) {
     $avatar = $user_data->profile->image_72;
 } else {
     $avatar = 'https://ca.slack-edge.com/T02G2SXKM-UD94JT3KQ-g8c100274e62-48';

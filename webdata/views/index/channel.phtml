@@ -52,6 +52,21 @@ if ($thread_tss) {
         $reply_messages[floatval($data->thread_ts)][$reply->ts] = $reply;
     }
 }
+$messages = [];
+$message_users = [];
+foreach ($this->messages->search($range_term)->order('ts ASC') as $message) {
+    $message_data = json_decode($message->data);
+    if ($message_data->user) {
+        $message_users[$message_data->user] = false;
+    }
+    $messages[] = $message;
+}
+if ($message_users) {
+    $user_ids = array_keys($message_users);
+    foreach (User::search(1)->searchIn('id', $user_ids) as $user) {
+        $message_users[$user->id] = json_decode($user->data);
+    }
+}
 ?>
 <?= $this->partial('common/header.phtml', $this) ?>
 
@@ -109,12 +124,12 @@ if ($thread_tss) {
 <section role="feed">
 <?php
 $current_date = null;
-foreach ($this->messages->search($range_term)->order('ts ASC') as $message) {
+foreach ($messages as $message) {
     if ($current_date === null or date('Y-m-d', $message->ts) != $current_date) {
         $current_date = date('Y-m-d', $message->ts); ?>
         <h5 class="my-3"><?= $current_date ?></h5>
     <?php } ?>
-    <?= $this->partial('/index/message.phtml', ['message' => $message, 'replies' => $reply_messages[floatval($message->ts)]]) ?>
+    <?= $this->partial('/index/message.phtml', ['message' => $message, 'replies' => $reply_messages[floatval($message->ts)], 'message_users' => $message_users]) ?>
 <?php } ?>
 </section>
 
