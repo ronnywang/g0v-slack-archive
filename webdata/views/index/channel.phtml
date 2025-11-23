@@ -28,8 +28,8 @@ while ($row = $res->fetch_array()) {
 }
 
 ksort($year_month_count);
-foreach ($year_month_count as $year => &$month_count) {
-    ksort($month_count);
+foreach ($year_month_count as $year => $month_count) {
+    ksort($year_month_count[$year]);
 }
 
 if ($this->next_date) {
