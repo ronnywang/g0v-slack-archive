@@ -60,7 +60,7 @@ if ($message_data->parent_user_id and !$message_data->is_thread_broadcast) {
                 <ul class="message-meta list-inline my-2 text-secondary small">
                     <li class="list-inline-item">
                         Forwarded from
-                    <?php if ($embed_channel->is_channel) { ?>
+                    <?php if (json_decode($embed_channel->data)->is_channel) { ?>
                         <a class="channel text-reset" href="/index/channel/<?= $embed_channel->id ?>">#<?= $this->escape($embed_channel->name) ?></a>
                     <?php } else { ?>
                         a private channel
